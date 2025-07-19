@@ -9,8 +9,8 @@ import UserButton from "@/app/components/UserButton";
 // Define a type for a single collectible
 interface Collectible {
   collectibleId: number;
-  name: string;
-  description: string;
+  name: {en: string};
+  description:  {en: string};
   imageRef?: {
     url: string;
   };
@@ -117,10 +117,10 @@ export default async function UBUNΛTIONRootPage() {
           {/* Text Content */}
           <div className="md:w-1/2 text-center md:text-left">
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-4 tracking-tight">
-              {heroCollectible ? heroCollectible.name : "ULT Dream Careers Lion Collection by"} <span className="text-blue-600">UBUNɅTION</span>
+              {heroCollectible ? heroCollectible.name.en : "ULT Dream Careers Lion Collection by"} <span className="text-blue-600">UBUNɅTION</span>
             </h1>
             <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-              {heroCollectible ? heroCollectible.description.replace(/<[^>]*>?/gm, '').substring(0, 400) + '...' : "Get ready for the groundbreaking ULT Dream Careers Lion Collection, where dreams meet impact! Backed by the leading web3 investment firm, LGD DAO, UBUNΛTION is set to make a lasting impact on the lives of underprivileged children in Kenya. Your chance to empower youth, enable education, and make a difference just around the corner. The ULT Dream Careers collection features 10,000 unique digital collectible Lions representing diverse dream careers, all securely stored on the Polygon blockchain. Your donation not only gets you an exclusive digital collectible but also brings life-changing opportunities to the most deserving youth."}
+              {heroCollectible ? heroCollectible.description.en.replace(/<[^>]*>?/gm, '').substring(0, 400) + '...' : "Get ready for the groundbreaking ULT Dream Careers Lion Collection, where dreams meet impact! Backed by the leading web3 investment firm, LGD DAO, UBUNΛTION is set to make a lasting impact on the lives of underprivileged children in Kenya. Your chance to empower youth, enable education, and make a difference just around the corner. The ULT Dream Careers collection features 10,000 unique digital collectible Lions representing diverse dream careers, all securely stored on the Polygon blockchain. Your donation not only gets you an exclusive digital collectible but also brings life-changing opportunities to the most deserving youth."}
             </p>
              <UserButton label="Donate Now & Get Your ULT NFT" route='/purchase' />
           </div>
@@ -131,7 +131,7 @@ export default async function UBUNΛTIONRootPage() {
             <Link href={`/campaign/${heroCollectible.collectibleId}`} className="hover:underline">
               <Image 
                 src={heroCollectible.imageRef.url} 
-                alt={heroCollectible.name} 
+                alt={heroCollectible.name.en} 
                 className="rounded-lg shadow-2xl w-full max-w-md"
                 width={500}
                 height={500}
@@ -160,7 +160,7 @@ export default async function UBUNΛTIONRootPage() {
                       <Link href={`/campaign/${collectible.collectibleId}`} className="hover:underline">
                           <Image 
                               src={collectible.imageRef.url}
-                              alt={collectible.name} 
+                              alt={collectible.name.en} 
                               className="w-full h-56 object-cover"
                               width={500}
                               height={500}
@@ -168,14 +168,14 @@ export default async function UBUNΛTIONRootPage() {
                       </Link>
                     )}
                     <div className="bg-blue-600 text-white text-center py-2 font-semibold">
-                        {collectible.name}
+                        {collectible.name.en}
                     </div>
                     <CardContent className="flex-grow text-center">
                         <div className="mt-4">
                             <UserButton label="Buy Now" route='/purchase' />
                         </div>
                         <p className="pt-6 text-gray-600">
-                            {collectible.description.replace(/<[^>]*>?/gm, '').substring(0, 100)}...
+                            {collectible.description.en.replace(/<[^>]*>?/gm, '').substring(0, 100)}...
                         </p>
                     </CardContent>
                 </Card>
