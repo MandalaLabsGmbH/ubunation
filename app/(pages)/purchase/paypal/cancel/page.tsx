@@ -1,7 +1,7 @@
 import { XCircle } from 'lucide-react';
 import Link from 'next/link';
 
-export default function PaymentCancelPage() {
+export default function PayPalCancelPage() {
     return (
         <div className="text-center py-20">
             <XCircle className="h-24 w-24 text-destructive mx-auto mb-6" />

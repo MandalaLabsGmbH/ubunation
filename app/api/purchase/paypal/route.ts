@@ -3,21 +3,46 @@ import { getToken } from "next-auth/jwt";
 import axios from 'axios';
 
 const CREATE_PAYPAL_ORDER_URL = process.env.CREATE_PAYPAL_ORDER_LAMBDA_URL;
+const API_BASE_URL = process.env.API_BASE_URL;
 
 export async function POST(request: NextRequest) {
     try {
         const token = await getToken({ req: request, secret: process.env.AUTH_SECRET });
-        const { cart } = await request.json();
+        let userId: number = 1; // Default to guest user ID
+
+        // If the user is logged in, fetch their internal database ID
+        if (token && token.email && token.accessToken) {
+            try {
+                const userResponse = await axios.get(`${API_BASE_URL}/User/getUserByEmail?email=${token.email}`, {
+                    headers: { 'Authorization': `Bearer ${token.accessToken}` }
+                });
+                if (userResponse.data && userResponse.data.userId) {
+                    userId = userResponse.data.userId;
+                }
+            } catch (error) {
+                console.error("Could not fetch user by email, proceeding as guest. Error:", error);
+                // userId remains 1
+            }
+        }
+
+        const { cart, purchaseId } = await request.json();
 
         if (!cart || cart.length === 0) {
             return NextResponse.json({ message: 'Shopping cart is empty.' }, { status: 400 });
+        }
+        if (!purchaseId) {
+            return NextResponse.json({ message: 'A purchase ID is required.' }, { status: 400 });
         }
         
         if (!CREATE_PAYPAL_ORDER_URL) {
             throw new Error("PayPal Lambda URL is not configured.");
         }
 
-        const payload = { userId: token?.sub, cart: cart };
+        const payload = { 
+            userId: userId, 
+            cart: cart,
+            purchaseId: purchaseId
+        };
 
         const lambdaResponse = await axios.post(CREATE_PAYPAL_ORDER_URL, payload);
 

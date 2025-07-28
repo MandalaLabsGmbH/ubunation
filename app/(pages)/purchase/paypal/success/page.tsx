@@ -1,7 +1,7 @@
 import { CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 
-export default function PaymentSuccessPage() {
+export default function PayPalSuccessPage() {
     return (
         <div className="text-center py-20">
             <CheckCircle className="h-24 w-24 text-green-500 mx-auto mb-6" />

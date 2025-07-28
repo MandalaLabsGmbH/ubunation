@@ -1,14 +1,28 @@
 import { NextResponse, NextRequest } from "next/server";
-import { getToken } from "next-auth/jwt"; // This is used to optionally get a user session
+import { getToken } from "next-auth/jwt";
 import axios, { AxiosError } from 'axios';
 
 const API_BASE_URL = process.env.API_BASE_URL;
 
 export async function POST(request: NextRequest) {
     try {
-        // We check for a token, but it is now optional. This allows us to
-        // associate the purchase with a user if they are logged in.
         const token = await getToken({ req: request, secret: process.env.AUTH_SECRET });
+        let userId: number = 1; // Default to guest user ID
+
+        // If the user is logged in, fetch their internal database ID
+        if (token && token.email && token.accessToken) {
+            try {
+                const userResponse = await axios.get(`${API_BASE_URL}/User/getUserByEmail?email=${token.email}`, {
+                    headers: { 'Authorization': `Bearer ${token.accessToken}` }
+                });
+                if (userResponse.data && userResponse.data.userId) {
+                    userId = userResponse.data.userId;
+                }
+            } catch (error) {
+                console.error("Could not fetch user by email, proceeding as guest. Error:", error);
+                // userId remains 1
+            }
+        }
 
         const { paymentMethod } = await request.json();
 
@@ -16,19 +30,14 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ message: 'A valid payment method (STRIPE or PAYPAL) is required.' }, { status: 400 });
         }
         
-        // The payload now includes the userId if the user is logged in, otherwise it's null.
-        // Your main backend API must be able to handle a null userId.
         const payload = { 
-            userId: token ? token.sub : null, 
+            userId: userId, 
             currency: paymentMethod,
             status: 'NOTSTARTED'
         };
 
-        // The Authorization header is removed from this call. The corresponding endpoint
-        // on your main backend API must now be public.
         const response = await axios.post(`${API_BASE_URL}/Purchase/createPurchase`, payload);
 
-        // Return the response from your main backend, which should include the new purchaseId.
         return NextResponse.json(response.data);
 
     } catch (e) {

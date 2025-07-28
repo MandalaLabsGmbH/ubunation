@@ -1,26 +1,48 @@
 'use client'
 
+import { useEffect } from 'react';
 import { usePayment } from '@/app/contexts/PaymentContext';
-import { useCart } from '@/app/contexts/CartContext'; // We need the cart items
-import { Elements } from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
+import { useCart } from '@/app/contexts/CartContext';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { X, CheckCircle, XCircle } from 'lucide-react';
 import Image from 'next/image';
-import StripePaymentForm from './StripePaymentForm';
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '');
-
+// Main Component
 export default function PaymentModal() {
-  const { 
-    isPaymentOpen, 
-    paymentView, 
-    closePayment, 
+  const {
+    isPaymentOpen,
+    paymentView,
+    closePayment,
     resetPayment,
-    clientSecret,
-    errorMessage
+    checkoutUrl,
+    errorMessage,
+    setPaymentView,
+    setErrorMessage
   } = usePayment();
+
+  // Listen for messages from the iframe (success or cancel)
+  useEffect(() => {
+    if (!isPaymentOpen) return;
+
+    const handleMessage = (event: MessageEvent) => {
+      // Ensure the message is from our app's origin for security
+      if (event.origin !== window.location.origin) {
+        return;
+      }
+
+      if (event.data === 'stripe-payment-success') {
+        setPaymentView('SUCCESS');
+      } else if (event.data === 'stripe-payment-cancel') {
+        setErrorMessage('Payment was cancelled.');
+        setPaymentView('ERROR');
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [isPaymentOpen, setPaymentView, setErrorMessage]);
+
 
   if (!isPaymentOpen) {
     return null;
@@ -28,6 +50,7 @@ export default function PaymentModal() {
 
   const handleCloseAndReset = () => {
       closePayment();
+      // Use a timeout to reset state after the modal has closed to avoid visual glitches
       setTimeout(resetPayment, 300);
   }
 
@@ -36,15 +59,19 @@ export default function PaymentModal() {
       case 'SELECT_METHOD':
         return <SelectMethodView />;
 
-      case 'STRIPE_PAYMENT':
-        if (!clientSecret) {
-            return <ErrorView message="Could not initialize payment. Please try again." onRetry={resetPayment} onClose={handleCloseAndReset} />;
+      case 'STRIPE_CHECKOUT':
+        if (!checkoutUrl) {
+            return <ErrorView message="Could not create payment session." onRetry={resetPayment} onClose={handleCloseAndReset} />;
         }
-        const options = { clientSecret };
         return (
-            <Elements stripe={stripePromise} options={options}>
-                <StripePaymentForm />
-            </Elements>
+            <div>
+                <h2 className="text-2xl font-bold text-center mb-4">Complete Your Purchase</h2>
+                <iframe
+                    src={checkoutUrl}
+                    className="w-full h-[600px] border-0 rounded-md"
+                    allow="payment"
+                ></iframe>
+            </div>
         );
 
       case 'PROCESSING':
@@ -75,7 +102,7 @@ export default function PaymentModal() {
 
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex justify-center items-center">
-      <Card className="relative bg-background rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
+      <Card className="relative bg-background rounded-lg shadow-xl p-6 w-full max-w-lg mx-4">
         <button onClick={handleCloseAndReset} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground">
           <X className="h-6 w-6" />
         </button>
@@ -90,6 +117,14 @@ function SelectMethodView() {
     const { startStripePayment, startPaypalPayment } = usePayment();
     const { cartItems } = useCart();
 
+    const handlePaypalClick = () => {
+        if (startPaypalPayment) {
+            startPaypalPayment(cartItems);
+        } else {
+            alert("PayPal integration is not yet complete.");
+        }
+    };
+
     return (
         <div>
             <h2 className="text-2xl font-bold text-center mb-6">Choose Payment Method</h2>
@@ -97,7 +132,7 @@ function SelectMethodView() {
                 <Button variant="outline" className="h-14 text-lg justify-center flex items-center" onClick={() => startStripePayment(cartItems)}>
                     <Image src="/images/stripe-logo.svg" alt="Stripe" width={60} height={25} />
                 </Button>
-                <Button variant="outline" className="h-14 text-lg justify-center flex items-center" onClick={() => startPaypalPayment(cartItems)}>
+                <Button variant="outline" className="h-14 text-lg justify-center flex items-center" onClick={handlePaypalClick}>
                     <Image src="/images/paypal-logo.svg" alt="PayPal" width={80} height={25} />
                 </Button>
                  <Button variant="outline" className="h-14 text-lg justify-center flex items-center" disabled>
