@@ -2,7 +2,7 @@ import { NextResponse, NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import axios from 'axios';
 
-const CREATE_PAYPAL_ORDER_URL = process.env.CREATE_PAYPAL_ORDER_LAMBDA_URL;
+const CREATE_PAYPAL_ORDER_URL = process.env.NEXT_PUBLIC_CREATE_PAYPAL_ORDER_LAMBDA_URL;
 const API_BASE_URL = process.env.API_BASE_URL;
 
 export async function POST(request: NextRequest) {

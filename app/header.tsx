@@ -7,13 +7,16 @@ import { inter } from './fonts';
 import LogoutButton from './logout-button';
 import { ThemeToggleButton } from './theme-toggle-button';
 import { useAuthModal } from '@/app/contexts/AuthModalContext';
-import { useCart } from '@/app/contexts/CartContext'; // Import the useCart hook
-import { ShoppingCart } from 'lucide-react'; // Import an icon
+import { useCart } from '@/app/contexts/CartContext';
+import { ShoppingCart } from 'lucide-react';
+import LanguageSelector from '@/app/components/LanguageSelector'; // Import the new component
+import { useTranslation } from '@/app/hooks/useTranslation'; // Import the translation hook
 
 export default function Header() {
   const { data: session } = useSession();
   const { openModal } = useAuthModal();
-  const { openCart, itemCount } = useCart(); // Get cart functions and state
+  const { openCart, itemCount } = useCart();
+  const { translate } = useTranslation(); // Use the hook
 
   return (
     <header className={`${inter.className} w-full py-4 border-b`}>
@@ -34,11 +37,10 @@ export default function Header() {
             <LogoutButton />
           ) : (
             <button onClick={() => openModal('/')} className="font-semibold text-foreground/80 hover:text-foreground transition-colors">
-              Login
+              {translate('login')}
             </button>
           )}
 
-          {/* Shopping Cart Button */}
           <button onClick={openCart} className="relative text-foreground/80 hover:text-foreground transition-colors">
             <ShoppingCart className="h-5 w-5" />
             {itemCount > 0 && (
@@ -47,7 +49,8 @@ export default function Header() {
               </span>
             )}
           </button>
-
+          
+          <LanguageSelector /> {/* Add the language selector here */}
           <ThemeToggleButton />
         </div>
       </nav>

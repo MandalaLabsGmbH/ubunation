@@ -1,7 +1,8 @@
 'use client'
 
 import { createContext, useContext, useState, ReactNode } from 'react';
-import { CartItem } from './CartContext';
+import { useCart } from './CartContext'; // Import useCart
+import { useTranslation } from '@/app/hooks/useTranslation'; // Import useTranslation
 
 export type PaymentView = 'SELECT_METHOD' | 'STRIPE_CHECKOUT' | 'PROCESSING' | 'SUCCESS' | 'ERROR';
 
@@ -10,8 +11,8 @@ interface PaymentContextType {
   paymentView: PaymentView;
   checkoutUrl: string | null;
   errorMessage: string | null;
-  startStripePayment: (cartItems: CartItem[]) => Promise<void>;
-  startPaypalPayment: (cartItems: CartItem[]) => Promise<void>;
+  startStripePayment: () => Promise<void>; // No longer needs cartItems as an argument
+  startPaypalPayment: () => Promise<void>; // No longer needs cartItems as an argument
   setPaymentView: (view: PaymentView) => void;
   setErrorMessage: (message: string) => void;
   closePayment: () => void;
@@ -25,17 +26,22 @@ export function PaymentProvider({ children }: { children: ReactNode }) {
   const [paymentView, setPaymentView] = useState<PaymentView>('SELECT_METHOD');
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const { cartItems } = useCart(); // Get cartItems from the CartContext
+  const { language } = useTranslation(); // Get the current language
 
-  const startStripePayment = async (cartItems: CartItem[]) => {
+  const startStripePayment = async () => {
     if (!isPaymentOpen) setIsPaymentOpen(true);
     setPaymentView('PROCESSING');
 
     try {
-      // Step 1: Create the purchase record in the database to get a purchaseId.
       const createResponse = await fetch('/api/db/purchase', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paymentMethod: 'STRIPE' }),
+        body: JSON.stringify({ 
+            paymentMethod: 'STRIPE', 
+            cart: cartItems, 
+            language: language 
+        }),
       });
 
       if (!createResponse.ok) {
@@ -45,7 +51,6 @@ export function PaymentProvider({ children }: { children: ReactNode }) {
 
       const { purchaseId } = await createResponse.json();
 
-      // Step 2: Use the new purchaseId to start the Stripe payment session.
       const response = await fetch('/api/purchase/stripe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -69,16 +74,19 @@ export function PaymentProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const startPaypalPayment = async (cartItems: CartItem[]) => {
+  const startPaypalPayment = async () => {
     if (!isPaymentOpen) setIsPaymentOpen(true);
     setPaymentView('PROCESSING');
 
     try {
-        // Step 1: Create the purchase record in the database.
         const createResponse = await fetch('/api/db/purchase', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ paymentMethod: 'PAYPAL' }),
+            body: JSON.stringify({ 
+                paymentMethod: 'PAYPAL', 
+                cart: cartItems, 
+                language: language 
+            }),
         });
 
         if (!createResponse.ok) {
@@ -88,7 +96,6 @@ export function PaymentProvider({ children }: { children: ReactNode }) {
 
         const { purchaseId } = await createResponse.json();
 
-        // Step 2: Use the new purchaseId to create the PayPal order.
         const response = await fetch('/api/purchase/paypal', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

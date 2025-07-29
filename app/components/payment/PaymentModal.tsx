@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react';
 import { usePayment } from '@/app/contexts/PaymentContext';
-import { useCart } from '@/app/contexts/CartContext';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { X, CheckCircle, XCircle } from 'lucide-react';
@@ -115,11 +114,10 @@ export default function PaymentModal() {
 // Sub-component for selecting a payment method
 function SelectMethodView() {
     const { startStripePayment, startPaypalPayment } = usePayment();
-    const { cartItems } = useCart();
 
     const handlePaypalClick = () => {
         if (startPaypalPayment) {
-            startPaypalPayment(cartItems);
+            startPaypalPayment();
         } else {
             alert("PayPal integration is not yet complete.");
         }
@@ -129,7 +127,7 @@ function SelectMethodView() {
         <div>
             <h2 className="text-2xl font-bold text-center mb-6">Choose Payment Method</h2>
             <div className="grid gap-4">
-                <Button variant="outline" className="h-14 text-lg justify-center flex items-center" onClick={() => startStripePayment(cartItems)}>
+                <Button variant="outline" className="h-14 text-lg justify-center flex items-center" onClick={() => startStripePayment()}>
                     <Image src="/images/stripe-logo.svg" alt="Stripe" width={60} height={25} />
                 </Button>
                 <Button variant="outline" className="h-14 text-lg justify-center flex items-center" onClick={handlePaypalClick}>
