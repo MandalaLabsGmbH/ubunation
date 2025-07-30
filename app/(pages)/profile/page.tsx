@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { headers } from "next/headers";
 import ProfilePageClient from "@/app/components/user/profile/ProfilePageClient";
 import { redirect } from "next/navigation";

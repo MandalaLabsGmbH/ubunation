@@ -49,11 +49,6 @@ export default function CampaignTemplate({ collectible }: CampaignTemplateProps)
       <Card className="bg-card shadow-lg rounded-lg mb-8">
         <CardContent className="p-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-48 flex gap-2">
-                <Button className="w-full bg-blue-600 hover:bg-blue-700 px-8 py-3 rounded-full text-lg font-semibold shadow-lg transition-transform transform hover:scale-105" onClick={handleAddToCart}>
-                  {translate('buyNow')}
-                </Button>
-            </div>
             <h1 className="text-xl md:text-2xl font-bold text-foreground">{displayName}</h1>
           </div>
         </CardContent>
@@ -91,6 +86,11 @@ export default function CampaignTemplate({ collectible }: CampaignTemplateProps)
                   className="w-full h-auto"
                 />
               </Card>
+              <div className="pt-10 flex gap-2">
+                <Button className="w-full bg-blue-600 hover:bg-blue-700 px-8 py-3 rounded-full text-lg font-semibold shadow-lg transition-transform transform hover:scale-105" onClick={handleAddToCart}>
+                  {translate('buyNow')}
+                </Button>
+            </div>
             </div>
             <div className="md:col-span-2">
               <Card className="bg-card shadow-lg rounded-lg w-full">

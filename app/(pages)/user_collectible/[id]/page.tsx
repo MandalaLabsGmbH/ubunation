@@ -20,10 +20,16 @@ interface UserCollectibleDetails {
   };
 }
 
+// The Fix: Both 'params' and 'searchParams' are now correctly typed as Promises.
+type PageProps = {
+  params: Promise<{ id: string }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+};
+
 // This function now calls our new, dedicated API route
 async function getDetails(id: string): Promise<UserCollectibleDetails | null> {
     try {
-        const res = await fetch(`${process.env.NEXTAUTH_URL}/api/db/user-collectible-details?id=${id}`, {
+        const res = await fetch(`${process.env.NEXTAUTH_URL}/api/db/userCollectibleDetails?id=${id}`, {
             headers: new Headers(await headers()),
             cache: 'no-store'
         });
@@ -39,9 +45,11 @@ async function getDetails(id: string): Promise<UserCollectibleDetails | null> {
     }
 }
 
-// The Fix: Remove the custom PageProps interface and type the props directly.
-export default async function UserCollectiblePage({ params }: { params: { id: string } }) {
-    const details = await getDetails(params.id);
+// Apply the new type and await the params inside the function.
+export default async function UserCollectiblePage({ params }: PageProps) {
+    // Await the params Promise to get the actual ID.
+    const { id } = await params;
+    const details = await getDetails(id);
 
     // Ensure all necessary data was fetched successfully
     if (!details || !details.collectible || !details.userCollectible || !details.owner) {

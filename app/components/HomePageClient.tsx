@@ -93,9 +93,6 @@ export default function HomePageClient({ heroCollectible, featuredCollectibles }
                         {getLocalizedString(collectible.name, language)}
                     </div>
                     <CardContent className="flex-grow text-center">
-                        <div className="mt-4">
-                            <UserButton label={translate('buyNow')} route='/purchase' />
-                        </div>
                         <p className="pt-6 text-gray-600">
                             {getLocalizedString(collectible.description, language).replace(/<[^>]*>?/gm, '').substring(0, 100)}...
                         </p>

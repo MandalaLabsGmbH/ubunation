@@ -1,7 +1,8 @@
 import CampaignTemplate from '@/app/components/CampaignTemplate';
 import { notFound } from 'next/navigation';
+import { headers } from 'next/headers';
 
-// Define a type for a single collectible, reflecting the multilingual structure
+// Define a type for a single collectible, reflecting your specific data structure
 interface Collectible {
   collectibleId: number;
   name: { en: string; de: string; };
@@ -13,18 +14,18 @@ interface Collectible {
   price?: { base: string };
 }
 
-// Define the standard props for a dynamic page component
-type PageProps = {
-  params: { id: string };
-  searchParams: { [key: string]: string | string[] | undefined };
+// The Fix: Both 'params' and 'searchParams' must be typed as Promises
+// to match the requirements of newer Next.js versions for async pages.
+type CampaignPageProps = {
+  params: Promise<{ id: string }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 // This function now calls our new, dedicated API route
 async function getCollectible(id: string): Promise<Collectible | null> {
     try {
         const res = await fetch(`${process.env.NEXTAUTH_URL}/api/db/collectible?collectibleId=${id}`, {
-            // The Fix: Remove the headers. They are not needed for fetching public data
-            // and are the source of the build error.
+            headers: new Headers(await headers()),
             cache: 'no-store'
         });
 
@@ -39,10 +40,11 @@ async function getCollectible(id: string): Promise<Collectible | null> {
     }
 }
 
-// This is the most robust pattern for defining a dynamic page in Next.js
-export default async function CampaignPage(props: PageProps) {
-    const { params } = props;
-    const collectible = await getCollectible(params.id);
+// Apply the new type and await the params inside the function.
+export default async function CampaignPage({ params }: CampaignPageProps) {
+    // Await the params Promise to get the actual ID.
+    const { id } = await params;
+    const collectible = await getCollectible(id);
 
     // Ensure the collectible and its essential, language-specific fields exist
     if (!collectible || !collectible.imageRef?.img || !collectible.name?.en) {
