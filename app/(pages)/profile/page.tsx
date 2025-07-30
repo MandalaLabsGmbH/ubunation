@@ -1,14 +1,78 @@
-'use client'
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { headers } from "next/headers";
+import ProfilePageClient from "@/app/components/user/profile/ProfilePageClient";
+import { redirect } from "next/navigation";
 
-import withAuth from "@/app/(auth)/withAuth";
+// --- Data Fetching Functions ---
 
-function ProfilePage() {
-  return (
-    <div className="text-center py-20">
-      <h1 className="text-4xl font-bold">My Collectibles</h1>
-      <p className="text-lg text-muted-foreground mt-4">Under Construction</p>
-    </div>
-  );
+// Fetches the full user object from your database
+async function getUser() {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) return null;
+
+    try {
+        const res = await fetch(`${process.env.NEXTAUTH_URL}/api/db/user?email=${session.user.email}`, {
+            headers: new Headers(await headers()),
+            cache: 'no-store',
+        });
+        if (!res.ok) return null;
+        return res.json();
+    } catch (error) {
+        console.error("Failed to fetch user:", error);
+        return null;
+    }
 }
 
-export default withAuth(ProfilePage);
+// Fetches all of a user's purchase items (the most detailed data)
+async function getPurchaseItems() {
+     try {
+        const res = await fetch(`${process.env.NEXTAUTH_URL}/api/db/purchaseItem`, {
+            headers: new Headers(await headers()),
+            cache: 'no-store',
+        });
+        if (!res.ok) return [];
+        return res.json();
+    } catch (error) {
+        console.error("Failed to fetch purchase items:", error);
+        return [];
+    }
+}
+
+// --- Main Page Component ---
+
+export default async function ProfilePage() {
+    const session = await getServerSession(authOptions);
+    if (!session) {
+        redirect('/'); // Redirect to home if not logged in
+    }
+
+    // Fetch all necessary data in parallel
+    const [user, allPurchaseItems] = await Promise.all([
+        getUser(),
+        getPurchaseItems()
+    ]);
+
+    if (!user) {
+        // Handle case where user data couldn't be fetched
+        return <div>Could not load user profile.</div>;
+    }
+
+    // Sort purchase items by date to find the most recent ones
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const sortedItems = allPurchaseItems.sort((a: any, b: any) => 
+        new Date(b.createdDt).getTime() - new Date(a.createdDt).getTime()
+    );
+
+    const mostRecentPurchaseItem = sortedItems.length > 0 ? sortedItems[0] : null;
+    const recentCollectibles = sortedItems.slice(0, 4);
+
+    return (
+        <ProfilePageClient
+            user={user}
+            totalCollectibles={allPurchaseItems.length}
+            mostRecentPurchaseItem={mostRecentPurchaseItem}
+            recentCollectibles={recentCollectibles}
+        />
+    );
+}

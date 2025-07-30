@@ -4,7 +4,6 @@ import axios, { AxiosError } from 'axios';
 
 const API_BASE_URL = process.env.API_BASE_URL;
 
-// This function fetches the detailed items for a single purchase and enriches them with full details.
 export async function GET(request: NextRequest) {
     try {
         const token = await getToken({ req: request, secret: process.env.AUTH_SECRET });
@@ -14,50 +13,78 @@ export async function GET(request: NextRequest) {
 
         const { searchParams } = new URL(request.url);
         const purchaseId = searchParams.get("purchaseId");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let purchaseItems: any[] = [];
 
-        if (!purchaseId) {
-            return NextResponse.json({ message: 'purchaseId is required' }, { status: 400 });
+        // Case 1: Fetch by a specific purchaseId (for the receipts modal)
+        if (purchaseId) {
+            const itemsResponse = await axios.get(`${API_BASE_URL}/PurchaseItem/getPurchaseItemsByPurchaseId`, {
+                params: { purchaseId: parseInt(purchaseId) },
+                headers: { 'Authorization': `Bearer ${token.accessToken}` }
+            });
+            purchaseItems = itemsResponse.data;
+        } 
+        // Case 2: Fetch all items for the logged-in user (for the profile page)
+        else if (token.email) {
+            // The Fix: Implement the multi-step fetch logic as you described.
+            
+            // Step A: Get the user's internal ID.
+            const userResponse = await axios.get(`${API_BASE_URL}/User/getUserByEmail`, {
+                params: { email: token.email },
+                headers: { 'Authorization': `Bearer ${token.accessToken}` }
+            });
+            const userId = userResponse.data.userId;
+
+            if (!userId) {
+                return NextResponse.json({ message: 'User not found' }, { status: 404 });
+            }
+
+            // Step B: Get all of the user's purchases.
+            const purchasesResponse = await axios.get(`${API_BASE_URL}/Purchase/getPurchasesByUserId`, {
+                params: { userId: userId },
+                headers: { 'Authorization': `Bearer ${token.accessToken}` }
+            });
+            const userPurchases = purchasesResponse.data;
+
+            // Step C: For each purchase, fetch its items and combine them.
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const itemPromises = userPurchases.map((purchase: any) => 
+                axios.get(`${API_BASE_URL}/PurchaseItem/getPurchaseItemsByPurchaseId`, {
+                    params: { purchaseId: purchase.purchaseId },
+                    headers: { 'Authorization': `Bearer ${token.accessToken}` }
+                }).then(res => res.data)
+            );
+            
+            const nestedItems = await Promise.all(itemPromises);
+            purchaseItems = nestedItems.flat(); // Flatten the array of arrays into a single list
+
+        } else {
+            return NextResponse.json({ message: 'A purchaseId or user session is required' }, { status: 400 });
         }
 
-        // 1. Fetch the basic list of purchase items for the given purchaseId.
-        const itemsResponse = await axios.get(`${API_BASE_URL}/PurchaseItem/getPurchaseItemsByPurchaseId`, {
-            params: { purchaseId: parseInt(purchaseId) },
-            headers: { 'Authorization': `Bearer ${token.accessToken}` }
-        });
-
-        const purchaseItems = itemsResponse.data;
-
-        // 2. Enrich the data by fetching full details for each item.
+        // Enrich the data by fetching full details for each item.
         const enrichedItems = await Promise.all(
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             purchaseItems.map(async (item: any) => {
                 try {
-                    // Fetch the full Collectible object using the itemId
                     const collectibleResponse = await axios.get(`${API_BASE_URL}/Collectible/getCollectibleByCollectibleId`, {
                         params: { collectibleId: item.itemId },
                         headers: { 'Authorization': `Bearer ${token.accessToken}` }
                     });
 
                     let userCollectibleData = null;
-                    
-                    // The Fix: Be more flexible with the type of purchasedUserItemId.
-                    // This handles cases where the ID might be a string in the JSON response.
                     if (item.purchasedUserItemId) {
-                        const id = parseInt(item.purchasedUserItemId, 10);
-                        if (!isNaN(id)) { // Ensure the ID is a valid number
-                            const userCollectibleResponse = await axios.get(`${API_BASE_URL}/UserCollectible/getUserCollectibleByUserCollectibleId`, {
-                                params: { userCollectibleId: id },
-                                headers: { 'Authorization': `Bearer ${token.accessToken}` }
-                            });
-                            userCollectibleData = userCollectibleResponse.data;
-                        }
+                        const userCollectibleResponse = await axios.get(`${API_BASE_URL}/UserCollectible/getUserCollectibleByUserCollectibleId`, {
+                            params: { userCollectibleId: item.purchasedUserItemId },
+                            headers: { 'Authorization': `Bearer ${token.accessToken}` }
+                        });
+                        userCollectibleData = Array.isArray(userCollectibleResponse.data) ? userCollectibleResponse.data[0] : userCollectibleResponse.data;
                     }
 
-                    // Combine the original item with the detailed data
                     return {
                         ...item,
                         collectible: collectibleResponse.data,
-                        userCollectible: userCollectibleData[0] // This will be null if not found, preventing errors
+                        userCollectible: userCollectibleData
                     };
                 } catch (enrichError) {
                     console.error(`Failed to enrich item ${item.purchaseItemId}:`, enrichError);
