@@ -5,31 +5,42 @@ import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { useCart } from '@/app/contexts/CartContext';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from '@/app/hooks/useTranslation';
 
-// Define the props the template will accept as individual properties
+// Define the props to accept a single 'collectible' object
 interface CampaignTemplateProps {
-  collectibleId: number;
-  name: string;
-  imageUrl: string;
-  descriptionHtml: string;
+  collectible: {
+    collectibleId: number;
+    name: { en: string; de: string; };
+    description: { en: string; de: string; };
+    imageRef?: { url: string; };
+  };
 }
 
-type Tab = 'overview' | 'splits';
-
-// Destructure the individual props directly in the function signature
-export default function CampaignTemplate({ collectibleId, name, imageUrl, descriptionHtml }: CampaignTemplateProps) {
-  const [activeTab, setActiveTab] = useState<Tab>('overview');
+export default function CampaignTemplate({ collectible }: CampaignTemplateProps) {
+  // All hooks must be called at the top level of the component, before any returns.
+  const { language, translate } = useTranslation();
+  const [activeTab, setActiveTab] = useState<'overview' | 'splits'>('overview');
   const { addToCart } = useCart();
+  
+  // The safety check is now placed *after* all hooks have been called.
+  // This preserves the hook call order on every render.
+  if (!collectible) {
+    return <div>Loading...</div>; // Or a more sophisticated loading component
+  }
+
+  // This code is now safe because it will only run if 'collectible' exists.
+  const displayName = collectible.name[language] || collectible.name.en;
+  const displayDescription = collectible.description[language] || collectible.description.en;
 
   const handleAddToCart = () => {
-    // Use the individual props to add the item to the cart
     addToCart({
-      collectibleId: collectibleId,
-      name: name,
-      imageUrl: imageUrl,
-      price: 9.99, // Static price as requested
+      collectibleId: collectible.collectibleId,
+      name: displayName,
+      imageUrl: collectible.imageRef?.url || '',
+      price: 9.99,
     });
-    alert(`${name} has been added to your cart!`);
+    alert(`${displayName} has been added to your cart!`);
   };
 
   return (
@@ -39,34 +50,27 @@ export default function CampaignTemplate({ collectibleId, name, imageUrl, descri
         <CardContent className="p-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="w-48 flex gap-2">
-                <Button className="w-full bg-blue-600 hover:bg-blue-700 px-8 py-3 rounded-full text-lg font-semibold shadow-lg transition-transform transform hover:scale-105" onClick={handleAddToCart}>Add to Cart</Button>
+                <Button className="w-full bg-blue-600 hover:bg-blue-700 px-8 py-3 rounded-full text-lg font-semibold shadow-lg transition-transform transform hover:scale-105" onClick={handleAddToCart}>
+                  {translate('buyNow')}
+                </Button>
             </div>
-            {/* Use the `name` prop directly */}
-            <h1 className="text-xl md:text-2xl font-bold text-foreground">{name}</h1>
+            <h1 className="text-xl md:text-2xl font-bold text-foreground">{displayName}</h1>
           </div>
         </CardContent>
       </Card>
 
       {/* Tabs Navigation */}
-       <div className="border-b border-border mb-8">
+      <div className="border-b border-border mb-8">
         <nav className="flex space-x-8">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`py-4 px-1 text-sm font-medium transition-colors
-              ${activeTab === 'overview'
-                ? 'border-b-2 border-primary text-primary'
-                : 'border-b-2 border-transparent text-muted-foreground hover:text-foreground'
-              }`}
+            className={`py-4 px-1 text-sm font-medium transition-colors ${activeTab === 'overview' ? 'border-b-2 border-primary text-primary' : 'border-b-2 border-transparent text-muted-foreground hover:text-foreground'}`}
           >
             Overview
           </button>
           <button
             onClick={() => setActiveTab('splits')}
-            className={`py-4 px-1 text-sm font-medium transition-colors
-              ${activeTab === 'splits'
-                ? 'border-b-2 border-primary text-primary'
-                : 'border-b-2 border-transparent text-muted-foreground hover:text-foreground'
-              }`}
+            className={`py-4 px-1 text-sm font-medium transition-colors ${activeTab === 'splits' ? 'border-b-2 border-primary text-primary' : 'border-b-2 border-transparent text-muted-foreground hover:text-foreground'}`}
           >
             Splits
           </button>
@@ -80,8 +84,8 @@ export default function CampaignTemplate({ collectibleId, name, imageUrl, descri
             <div className="md:col-span-1">
               <Card className="bg-card shadow-lg rounded-lg overflow-hidden">
                 <Image
-                  src={imageUrl}
-                  alt={name}
+                  src={collectible.imageRef?.url || ''}
+                  alt={displayName}
                   width={800}
                   height={800}
                   className="w-full h-auto"
@@ -94,7 +98,7 @@ export default function CampaignTemplate({ collectibleId, name, imageUrl, descri
                   <h2 className="text-xl font-semibold text-foreground mb-4">Description</h2>
                   <div
                     className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground"
-                    dangerouslySetInnerHTML={{ __html: descriptionHtml }}
+                    dangerouslySetInnerHTML={{ __html: displayDescription }}
                   />
                 </CardContent>
               </Card>

@@ -54,7 +54,8 @@ function CartItemRow({ item, onRemove }: { item: CartItem; onRemove: (id: number
 
 export default function CartModal() {
   const { isOpen, closeCart, cartItems, clearCart, itemCount, removeFromCart } = useCart();
-  const { setPaymentView, resetPayment } = usePayment(); // Get payment context functions
+  // Get the new openPayment function from the context
+  const { openPayment } = usePayment();
   const [showConfirm, setShowConfirm] = useState(false);
 
   if (!isOpen) return null;
@@ -64,11 +65,10 @@ export default function CartModal() {
     setShowConfirm(false);
   };
 
+  // This function now correctly closes the cart and opens the payment modal
   const handleCheckout = () => {
-    closeCart(); // Close the cart modal
-    resetPayment(); // Ensure payment modal is in its initial state
-    setPaymentView('SELECT_METHOD'); // Set the view to method selection
-    // The context's `isPaymentOpen` will be handled by the payment flow itself
+    closeCart();
+    openPayment();
   };
   
   const totalPrice = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);

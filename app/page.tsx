@@ -1,17 +1,16 @@
 import { headers } from 'next/headers';
-import HomePageClient from '@/app/components/HomePageClient'; // Import the new Client Component
+import HomePageClient from '@/app/components/HomePageClient';
 
-// Define the type for a single collectible
+// Define the type for a single collectible with multilingual name and description
 interface Collectible {
   collectibleId: number;
-  name: { en: string };
-  description: { en: string };
+  name: { en: string; de: string; };
+  description: { en: string; de: string; };
   imageRef?: {
     url: string;
   };
 }
 
-// This server-side function fetches all collectibles.
 async function getAllCollectibles(): Promise<Collectible[]> {
   try {
     const requestHeaders = await headers();
@@ -39,15 +38,12 @@ async function getAllCollectibles(): Promise<Collectible[]> {
   }
 }
 
-// This is your main page component, which remains a Server Component.
 export default async function UBUNΛTIONRootPage() {
-  // Fetch all data on the server
   const allCollectibles: Collectible[] = await getAllCollectibles();
   
   const heroCollectible: Collectible | null = allCollectibles.length > 0 ? allCollectibles[0] : null;
   const featuredCollectibles = allCollectibles.slice(1, 4);
 
-  // Pass the server-fetched data as props to the Client Component
   return (
     <HomePageClient 
       heroCollectible={heroCollectible} 

@@ -1,18 +1,21 @@
 'use client'
 
 import { createContext, useContext, useState, ReactNode } from 'react';
-import { useCart } from './CartContext'; // Import useCart
-import { useTranslation } from '@/app/hooks/useTranslation'; // Import useTranslation
+import { useCart } from './CartContext';
+import { useTranslation } from '@/app/hooks/useTranslation';
 
-export type PaymentView = 'SELECT_METHOD' | 'STRIPE_CHECKOUT' | 'PROCESSING' | 'SUCCESS' | 'ERROR';
+// PAYPAL_CHECKOUT will now render the JS SDK buttons, not an iframe
+export type PaymentView = 'SELECT_METHOD' | 'STRIPE_ELEMENTS' | 'PAYPAL_CHECKOUT' | 'PROCESSING' | 'SUCCESS' | 'ERROR';
 
 interface PaymentContextType {
   isPaymentOpen: boolean;
   paymentView: PaymentView;
-  checkoutUrl: string | null;
+  clientSecret: string | null; // For Stripe
+  paypalOrderID: string | null; // <-- New: For PayPal
   errorMessage: string | null;
-  startStripePayment: () => Promise<void>; // No longer needs cartItems as an argument
-  startPaypalPayment: () => Promise<void>; // No longer needs cartItems as an argument
+  openPayment: () => void;
+  startStripePayment: () => Promise<void>;
+  startPaypalPayment: () => Promise<void>;
   setPaymentView: (view: PaymentView) => void;
   setErrorMessage: (message: string) => void;
   closePayment: () => void;
@@ -24,31 +27,30 @@ const PaymentContext = createContext<PaymentContextType | undefined>(undefined);
 export function PaymentProvider({ children }: { children: ReactNode }) {
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [paymentView, setPaymentView] = useState<PaymentView>('SELECT_METHOD');
-  const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [paypalOrderID, setPaypalOrderID] = useState<string | null>(null); // <-- New state
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const { cartItems } = useCart(); // Get cartItems from the CartContext
-  const { language } = useTranslation(); // Get the current language
+  const { cartItems } = useCart();
+  const { language } = useTranslation();
+
+  const openPayment = () => {
+    resetPayment();
+    setIsPaymentOpen(true);
+  };
 
   const startStripePayment = async () => {
-    if (!isPaymentOpen) setIsPaymentOpen(true);
     setPaymentView('PROCESSING');
-
     try {
+      const purchasePayload = {
+        currency: 'STRIPE', status: 'NOTSTARTED',
+        purchaseData: { cart: cartItems, language: language }
+      };
       const createResponse = await fetch('/api/db/purchase', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-            paymentMethod: 'STRIPE', 
-            cart: cartItems, 
-            language: language 
-        }),
+        body: JSON.stringify(purchasePayload),
       });
-
-      if (!createResponse.ok) {
-        const errorData = await createResponse.json();
-        throw new Error(errorData.message || 'Failed to create purchase record.');
-      }
-
+      if (!createResponse.ok) throw new Error((await createResponse.json()).message);
       const { purchaseId } = await createResponse.json();
 
       const response = await fetch('/api/purchase/stripe', {
@@ -56,16 +58,11 @@ export function PaymentProvider({ children }: { children: ReactNode }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cart: cartItems, purchaseId: purchaseId }),
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to start Stripe payment.');
-      }
-
-      const { checkoutUrl } = await response.json();
+      if (!response.ok) throw new Error((await response.json()).message);
+      const { clientSecret } = await response.json();
       
-      setCheckoutUrl(checkoutUrl);
-      setPaymentView('STRIPE_CHECKOUT');
+      setClientSecret(clientSecret);
+      setPaymentView('STRIPE_ELEMENTS');
 
     } catch (error) {
       console.error("Stripe initiation error:", error);
@@ -75,25 +72,18 @@ export function PaymentProvider({ children }: { children: ReactNode }) {
   };
 
   const startPaypalPayment = async () => {
-    if (!isPaymentOpen) setIsPaymentOpen(true);
     setPaymentView('PROCESSING');
-
     try {
+        const purchasePayload = {
+          currency: 'PAYPAL', status: 'NOTSTARTED',
+          purchaseData: { cart: cartItems, language: language }
+        };
         const createResponse = await fetch('/api/db/purchase', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                paymentMethod: 'PAYPAL', 
-                cart: cartItems, 
-                language: language 
-            }),
+            body: JSON.stringify(purchasePayload),
         });
-
-        if (!createResponse.ok) {
-            const errorData = await createResponse.json();
-            throw new Error(errorData.message || 'Failed to create purchase record.');
-        }
-
+        if (!createResponse.ok) throw new Error((await createResponse.json()).message);
         const { purchaseId } = await createResponse.json();
 
         const response = await fetch('/api/purchase/paypal', {
@@ -101,16 +91,13 @@ export function PaymentProvider({ children }: { children: ReactNode }) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ cart: cartItems, purchaseId: purchaseId }),
         });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || 'Failed to create PayPal order.');
-        }
-
-        const { checkoutUrl } = await response.json();
+        if (!response.ok) throw new Error((await response.json()).message);
+        
+        // The Fix: Expect 'orderID' from the backend response.
+        const { orderID } = await response.json();
       
-        setCheckoutUrl(checkoutUrl);
-        setPaymentView('STRIPE_CHECKOUT');
+        setPaypalOrderID(orderID); // <-- Save the orderID
+        setPaymentView('PAYPAL_CHECKOUT'); // <-- Switch to the new view
 
     } catch (error) {
         console.error("PayPal initiation error:", error);
@@ -119,27 +106,19 @@ export function PaymentProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const closePayment = () => {
-    setIsPaymentOpen(false);
-  };
+  const closePayment = () => setIsPaymentOpen(false);
   
   const resetPayment = () => {
       setPaymentView('SELECT_METHOD');
-      setCheckoutUrl(null);
+      setClientSecret(null);
+      setPaypalOrderID(null); // <-- Reset the orderID
       setErrorMessage(null);
   }
 
   const value = { 
-    isPaymentOpen, 
-    paymentView, 
-    checkoutUrl,
-    errorMessage,
-    startStripePayment,
-    startPaypalPayment,
-    setPaymentView,
-    setErrorMessage,
-    closePayment,
-    resetPayment
+    isPaymentOpen, paymentView, clientSecret, paypalOrderID, errorMessage,
+    openPayment, startStripePayment, startPaypalPayment,
+    setPaymentView, setErrorMessage, closePayment, resetPayment
   };
 
   return (

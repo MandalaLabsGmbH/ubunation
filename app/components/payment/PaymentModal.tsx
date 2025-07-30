@@ -7,29 +7,33 @@ import { Button } from '@/components/ui/button';
 import { X, CheckCircle, XCircle } from 'lucide-react';
 import Image from 'next/image';
 
-// Main Component
+// --- Stripe Elements Imports ---
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements } from '@stripe/react-stripe-js';
+import StripePaymentForm from './StripePaymentForm';
+// --- PayPal SDK Import ---
+import PayPalButtonsComponent from './PayPalButtonsComponent';
+
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+
 export default function PaymentModal() {
   const {
     isPaymentOpen,
     paymentView,
     closePayment,
     resetPayment,
-    checkoutUrl,
+    clientSecret,
+    paypalOrderID, // Get the PayPal orderID
     errorMessage,
     setPaymentView,
     setErrorMessage
   } = usePayment();
 
-  // Listen for messages from the iframe (success or cancel)
+  // This useEffect is no longer needed for PayPal's new flow
   useEffect(() => {
     if (!isPaymentOpen) return;
-
     const handleMessage = (event: MessageEvent) => {
-      // Ensure the message is from our app's origin for security
-      if (event.origin !== window.location.origin) {
-        return;
-      }
-
+      if (event.origin !== window.location.origin) return;
       if (event.data === 'stripe-payment-success') {
         setPaymentView('SUCCESS');
       } else if (event.data === 'stripe-payment-cancel') {
@@ -37,11 +41,9 @@ export default function PaymentModal() {
         setPaymentView('ERROR');
       }
     };
-
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
   }, [isPaymentOpen, setPaymentView, setErrorMessage]);
-
 
   if (!isPaymentOpen) {
     return null;
@@ -49,7 +51,6 @@ export default function PaymentModal() {
 
   const handleCloseAndReset = () => {
       closePayment();
-      // Use a timeout to reset state after the modal has closed to avoid visual glitches
       setTimeout(resetPayment, 300);
   }
 
@@ -58,20 +59,22 @@ export default function PaymentModal() {
       case 'SELECT_METHOD':
         return <SelectMethodView />;
 
-      case 'STRIPE_CHECKOUT':
-        if (!checkoutUrl) {
-            return <ErrorView message="Could not create payment session." onRetry={resetPayment} onClose={handleCloseAndReset} />;
+      case 'STRIPE_ELEMENTS':
+        if (!clientSecret) {
+            return <ErrorView message="Could not initialize Stripe payment." onRetry={resetPayment} onClose={handleCloseAndReset} />;
         }
         return (
-            <div>
-                <h2 className="text-2xl font-bold text-center mb-4">Complete Your Purchase</h2>
-                <iframe
-                    src={checkoutUrl}
-                    className="w-full h-[600px] border-0 rounded-md"
-                    allow="payment"
-                ></iframe>
-            </div>
+          <Elements stripe={stripePromise} options={{ clientSecret }}>
+            <StripePaymentForm />
+          </Elements>
         );
+      
+      // The Fix: Render the new PayPal Buttons component
+      case 'PAYPAL_CHECKOUT':
+        if (!paypalOrderID) {
+            return <ErrorView message="Could not create PayPal payment session." onRetry={resetPayment} onClose={handleCloseAndReset} />;
+        }
+        return <PayPalButtonsComponent />;
 
       case 'PROCESSING':
         return (
@@ -115,26 +118,15 @@ export default function PaymentModal() {
 function SelectMethodView() {
     const { startStripePayment, startPaypalPayment } = usePayment();
 
-    const handlePaypalClick = () => {
-        if (startPaypalPayment) {
-            startPaypalPayment();
-        } else {
-            alert("PayPal integration is not yet complete.");
-        }
-    };
-
     return (
         <div>
             <h2 className="text-2xl font-bold text-center mb-6">Choose Payment Method</h2>
             <div className="grid gap-4">
                 <Button variant="outline" className="h-14 text-lg justify-center flex items-center" onClick={() => startStripePayment()}>
-                    <Image src="/images/stripe-logo.svg" alt="Stripe" width={60} height={25} />
+                    <Image src="/images/svg/stripe.svg" alt="Stripe" width={60} height={25} />
                 </Button>
-                <Button variant="outline" className="h-14 text-lg justify-center flex items-center" onClick={handlePaypalClick}>
-                    <Image src="/images/paypal-logo.svg" alt="PayPal" width={80} height={25} />
-                </Button>
-                 <Button variant="outline" className="h-14 text-lg justify-center flex items-center" disabled>
-                    <Image src="/images/wallet-logo.svg" alt="Wallet" width={90} height={25} />
+                <Button variant="outline" className="h-14 text-lg justify-center flex items-center" onClick={() => startPaypalPayment()}>
+                    <Image src="/images/svg/paypal.svg" alt="PayPal" width={80} height={25} />
                 </Button>
             </div>
         </div>

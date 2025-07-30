@@ -41,48 +41,43 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<Language>('en');
   // Initialize state with the local English translations as a default/fallback
   const [translations, setTranslations] = useState<Translations>(localEnTranslations);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false); // Set initial loading to false
 
   useEffect(() => {
     const savedLanguage = Cookies.get('app-language') as Language | undefined;
-    if (savedLanguage && ['en', 'de'].includes(savedLanguage)) {
-      setLanguageState(savedLanguage);
-    } else {
-      setLanguageState('en');
-    }
+    const initialLang = (savedLanguage && ['en', 'de'].includes(savedLanguage)) ? savedLanguage : 'en';
+    setLanguageState(initialLang);
+
+    // Fetch translations for the initial language
+    fetchTranslations(initialLang);
   }, []);
 
-  useEffect(() => {
-    const fetchTranslations = async () => {
-      setIsLoading(true);
-      const url = language === 'de' ? DE_JSON_URL : EN_JSON_URL;
-      try {
-        const response = await fetch(url, { cache: 'no-store' }); // Disable caching for fresh data
-        if (!response.ok) {
-          throw new Error(`Failed to fetch translations from ${url}. Status: ${response.status}`);
-        }
-        const data = await response.json();
-        setTranslations(data);
-      } catch (error) {
-        console.error("Translation loading error:", error);
-        // If the fetch fails, we ensure the translations fall back to the local English version.
-        setTranslations(localEnTranslations);
-      } finally {
-        setIsLoading(false);
+  const fetchTranslations = useCallback(async (lang: Language) => {
+    setIsLoading(true);
+    const url = lang === 'de' ? DE_JSON_URL : EN_JSON_URL;
+    try {
+      const response = await fetch(url, { cache: 'no-store' });
+      if (!response.ok) {
+        throw new Error(`Failed to fetch translations from ${url}. Status: ${response.status}`);
       }
-    };
-
-    fetchTranslations();
-  }, [language]);
+      const data = await response.json();
+      setTranslations(data);
+    } catch (error) {
+      console.error("Translation loading error:", error);
+      // If the fetch fails, ensure the translations fall back to the local English version.
+      setTranslations(localEnTranslations);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
     Cookies.set('app-language', lang, { expires: 365 });
+    fetchTranslations(lang); // Fetch new translations when language changes
   };
 
   const translate = useCallback((key: string): string => {
-    // The translations object will always have the local 'en' data at a minimum,
-    // preventing the key from being shown.
     return translations[key] || key;
   }, [translations]);
 
@@ -95,7 +90,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   };
 
   // The provider now renders its children immediately, using the fallback
-  // translations until the remote fetch completes.
+  // translations until a remote fetch completes. This prevents the page from hanging.
   return (
     <LanguageContext.Provider value={value}>
       {children}

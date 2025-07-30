@@ -9,7 +9,6 @@ export async function POST(request: NextRequest) {
         const token = await getToken({ req: request, secret: process.env.AUTH_SECRET });
         let userId: number = 1; // Default to guest user ID
 
-        // If the user is logged in, fetch their internal database ID
         if (token && token.email && token.accessToken) {
             try {
                 const userResponse = await axios.get(`${API_BASE_URL}/User/getUserByEmail?email=${token.email}`, {
@@ -20,20 +19,16 @@ export async function POST(request: NextRequest) {
                 }
             } catch (error) {
                 console.error("Could not fetch user by email, proceeding as guest. Error:", error);
-                // userId remains 1
             }
         }
 
-        const { paymentMethod } = await request.json();
+        // Get the pre-formatted payload from the frontend
+        const requestData = await request.json();
 
-        if (!paymentMethod || (paymentMethod !== 'STRIPE' && paymentMethod !== 'PAYPAL')) {
-            return NextResponse.json({ message: 'A valid payment method (STRIPE or PAYPAL) is required.' }, { status: 400 });
-        }
-        
+        // Combine the server-determined userId with the frontend payload
         const payload = { 
             userId: userId, 
-            currency: paymentMethod,
-            status: 'NOTSTARTED'
+            ...requestData
         };
 
         const response = await axios.post(`${API_BASE_URL}/Purchase/createPurchase`, payload);
