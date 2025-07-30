@@ -42,6 +42,11 @@ async function getPurchaseItems() {
 // --- Main Page Component ---
 
 export default async function ProfilePage() {
+    console.log("SERVER-SIDE ENV CHECK:", {
+        API_BASE_URL: process.env.API_BASE_URL,
+        NEXTAUTH_URL: process.env.NEXTAUTH_URL,
+        AUTH_SECRET_IS_SET: !!process.env.AUTH_SECRET, // Check if the secret is set
+    });
     const session = await getServerSession(authOptions);
     if (!session) {
         redirect('/'); // Redirect to home if not logged in
