@@ -63,11 +63,12 @@ export default async function ProfilePage() {
         return <div>Could not load user profile.</div>;
     }
 
-    // Sort purchase items by date to find the most recent ones
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const sortedItems = allPurchaseItems.sort((a: any, b: any) => 
-        new Date(b.createdDt).getTime() - new Date(a.createdDt).getTime()
-    );
+    const sortedItems = allPurchaseItems.sort((a: any, b: any) => {
+        const dateA = a.userCollectible ? new Date(a.userCollectible.createdDt).getTime() : 0;
+        const dateB = b.userCollectible ? new Date(b.userCollectible.createdDt).getTime() : 0;
+        return dateB - dateA;
+    });
 
     const mostRecentPurchaseItem = sortedItems.length > 0 ? sortedItems[0] : null;
     const recentCollectibles = sortedItems.slice(0, 4);

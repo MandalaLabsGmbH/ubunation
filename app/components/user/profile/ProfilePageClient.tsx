@@ -22,6 +22,7 @@ interface PurchaseItem {
     userCollectible: {
         userCollectibleId: number; // Add this ID for linking
         mint: number;
+        createdDt: string;
     };
 }
 
@@ -125,7 +126,7 @@ export default function ProfilePageClient({
                                         </div>
                                         <CardContent className="flex-grow text-center p-4">
                                             <p className="text-sm text-muted-foreground">
-                                                Purchased On: {formatDate(item.createdDt)}
+                                                Purchased On: {formatDate(item.userCollectible.createdDt)}
                                             </p>
                                         </CardContent>
                                     </Card>
