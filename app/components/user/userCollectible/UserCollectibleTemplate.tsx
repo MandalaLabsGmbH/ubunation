@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useTranslation } from '@/app/hooks/useTranslation';
 import CollectibleImage from '../../CollectibleImage';
+import SplitsView from '../../SplitsView';
 
 // Define the type for the props this component receives
 interface UserCollectibleDetails {
@@ -94,7 +95,6 @@ export default function UserCollectibleTemplate({ details }: UserCollectibleTemp
             <div className="md:col-span-2">
               <Card className="bg-card shadow-lg rounded-lg w-full">
                 <CardContent className="p-6 md:p-8">
-                  {/* 3. Add the 'Owned By' section */}
                   <div className="pb-4 mb-4 border-b">
                     <p className="text-sm font-semibold text-muted-foreground">Owned By</p>
                     <p className="text-lg font-bold">{ownerName}</p>
@@ -111,13 +111,8 @@ export default function UserCollectibleTemplate({ details }: UserCollectibleTemp
           </div>
         )}
 
-        {activeTab === 'splits' && (
-          <Card className="bg-card shadow-lg rounded-lg">
-            <CardContent className="p-8 text-center">
-              <p className="text-muted-foreground">Coming soon!</p>
-            </CardContent>
-          </Card>
-        )}
+        {/* The Fix: Render the SplitsView component */}
+        {activeTab === 'splits' && <SplitsView />}
       </div>
     </div>
   );

@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useCart } from '@/app/contexts/CartContext';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/app/hooks/useTranslation';
+import SplitsView from './SplitsView';
 
 // Update the props to accept a single 'collectible' object
 interface CampaignTemplateProps {
@@ -14,7 +15,7 @@ interface CampaignTemplateProps {
     name: { en: string; de: string; };
     description: { en: string; de: string; };
     imageRef?: { url: string; img: string };
-    price?: { base: string }; // Add the price object to the type
+    price?: { base: string };
   };
 }
 
@@ -72,8 +73,7 @@ export default function CampaignTemplate({ collectible }: CampaignTemplateProps)
         </nav>
       </div>
 
-      {/* Tab Content */}
-      <div>
+      {/* Tab Content */}<div>
         {activeTab === 'overview' && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
             <div className="md:col-span-1">
@@ -106,13 +106,8 @@ export default function CampaignTemplate({ collectible }: CampaignTemplateProps)
           </div>
         )}
 
-        {activeTab === 'splits' && (
-          <Card className="bg-card shadow-lg rounded-lg">
-            <CardContent className="p-8 text-center">
-              <p className="text-muted-foreground">Coming soon!</p>
-            </CardContent>
-          </Card>
-        )}
+        {/* The Fix: Render the SplitsView component */}
+        {activeTab === 'splits' && <SplitsView />}
       </div>
     </div>
   );
