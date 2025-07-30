@@ -2,7 +2,7 @@ import { NextResponse, NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import axios, { AxiosError } from 'axios';
 
-const API_BASE_URL = process.env.API_BASE_URL;
+const NEXT_PUBLIC_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export async function GET(request: NextRequest) {
     try {
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
                 return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
             }
 
-            const userResponse = await axios.get(`${API_BASE_URL}/User/getUserByEmail`, {
+            const userResponse = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/User/getUserByEmail`, {
                 params: { email: token.email },
                 headers: { 'Authorization': `Bearer ${token.accessToken}` }
             });
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
                 return NextResponse.json({ message: 'User not found' }, { status: 404 });
             }
 
-            const userCollectiblesResponse = await axios.get(`${API_BASE_URL}/UserCollectible/getUserCollectiblesByOwnerId`, {
+            const userCollectiblesResponse = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/UserCollectible/getUserCollectiblesByOwnerId`, {
                 params: { ownerId: userId },
                 headers: { 'Authorization': `Bearer ${token.accessToken}` }
             });
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 userCollectibles.map(async (userCollectible: any) => {
                     try {
-                        const collectibleResponse = await axios.get(`${API_BASE_URL}/Collectible/getCollectibleByCollectibleId`, {
+                        const collectibleResponse = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/Collectible/getCollectibleByCollectibleId`, {
                             params: { collectibleId: userCollectible.collectibleId },
                             headers: { 'Authorization': `Bearer ${token.accessToken}` }
                         });
@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
 
         // Case 2: Fetch a single collectible by its ID.
         if (collectibleId) {
-            const response = await axios.get(`${API_BASE_URL}/Collectible/getCollectibleByCollectibleId`, {
+            const response = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/Collectible/getCollectibleByCollectibleId`, {
                 params: { collectibleId }
             });
             return NextResponse.json(response.data);
@@ -68,14 +68,14 @@ export async function GET(request: NextRequest) {
         
         // Case 3: Fetch all collectibles in a collection.
         if (collectionId) {
-            const response = await axios.get(`${API_BASE_URL}/Collectible/getCollectiblesByCollection`, {
+            const response = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/Collectible/getCollectiblesByCollection`, {
                 params: { collectionId }
             });
             return NextResponse.json(response.data);
         }
         
         // Default Case: Fetch ALL collectibles if no specific ID is provided.
-        const response = await axios.get(`${API_BASE_URL}/Collectible/getAllCollectibles`);
+        const response = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/Collectible/getAllCollectibles`);
         return NextResponse.json(response.data);
 
     } catch (e) {

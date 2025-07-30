@@ -43,7 +43,7 @@ async function getPurchaseItems() {
 
 export default async function ProfilePage() {
     console.log("SERVER-SIDE ENV CHECK:", {
-        API_BASE_URL: process.env.API_BASE_URL,
+        NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
         NEXTAUTH_URL: process.env.NEXTAUTH_URL,
         AUTH_SECRET_IS_SET: !!process.env.AUTH_SECRET, // Check if the secret is set
     });

@@ -2,7 +2,7 @@ import { NextResponse, NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import axios, { AxiosError } from 'axios';
 
-const API_BASE_URL = process.env.API_BASE_URL;
+const NEXT_PUBLIC_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export async function GET(request: NextRequest) {
     try {
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
         // The Fix: Check if a specific userCollectibleId is being requested.
         if (userCollectibleId) {
             // This is the call made by the purchases modal.
-            const response = await axios.get(`${API_BASE_URL}/UserCollectible/getUserCollectibleByUserCollectibleId`, {
+            const response = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/UserCollectible/getUserCollectibleByUserCollectibleId`, {
                 params: { userCollectibleId: parseInt(userCollectibleId) },
                 headers: { 'Authorization': `Bearer ${token.accessToken}` }
             });
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
         }
 
         // This is the original logic, which can be kept as a fallback for other use cases.
-        const userResponse = await axios.get(`${API_BASE_URL}/User/getUserByEmail`, {
+        const userResponse = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/User/getUserByEmail`, {
             params: { email: token.email },
             headers: { 'Authorization': `Bearer ${token.accessToken}` }
         });
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ message: "User not found" }, { status: 404 });
         }
         
-        const userCollectibleResponse = await axios.get(`${API_BASE_URL}/UserCollectible/getUserCollectiblesByOwnerId`, {
+        const userCollectibleResponse = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/UserCollectible/getUserCollectiblesByOwnerId`, {
             params: { ownerId: userId },
             headers: { 'Authorization': `Bearer ${token.accessToken}` }
         });
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
 
         const { userId, collectibleId, mint } = await request.json();
         
-        await axios.post(`${API_BASE_URL}/UserCollectible/createUserCollectible`, {
+        await axios.post(`${NEXT_PUBLIC_API_BASE_URL}/UserCollectible/createUserCollectible`, {
             "ownerId": userId,
             "collectibleId": collectibleId,
             "mint": mint

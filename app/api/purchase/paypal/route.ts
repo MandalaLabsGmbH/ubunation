@@ -3,7 +3,7 @@ import { getToken } from "next-auth/jwt";
 import axios from 'axios';
 
 const CREATE_PAYPAL_ORDER_URL = process.env.NEXT_PUBLIC_CREATE_PAYPAL_ORDER_LAMBDA_URL;
-const API_BASE_URL = process.env.API_BASE_URL;
+const NEXT_PUBLIC_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export async function POST(request: NextRequest) {
     try {
@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
         // If the user is logged in, fetch their internal database ID
         if (token && token.email && token.accessToken) {
             try {
-                const userResponse = await axios.get(`${API_BASE_URL}/User/getUserByEmail?email=${token.email}`, {
+                const userResponse = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/User/getUserByEmail?email=${token.email}`, {
                     headers: { 'Authorization': `Bearer ${token.accessToken}` }
                 });
                 if (userResponse.data && userResponse.data.userId) {

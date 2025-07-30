@@ -2,7 +2,7 @@ import { NextResponse, NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import axios, { AxiosError } from 'axios';
 
-const API_BASE_URL = process.env.API_BASE_URL;
+const NEXT_PUBLIC_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 // This function fetches all the necessary details for a single user collectible page.
 export async function GET(request: NextRequest) {
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
         }
 
         // 1. Fetch the core UserCollectible object
-        const userCollectibleResponse = await axios.get(`${API_BASE_URL}/UserCollectible/getUserCollectibleByUserCollectibleId`, {
+        const userCollectibleResponse = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/UserCollectible/getUserCollectibleByUserCollectibleId`, {
             params: { userCollectibleId },
             headers: { 'Authorization': `Bearer ${token.accessToken}` }
         });
@@ -31,11 +31,11 @@ export async function GET(request: NextRequest) {
 
         // 2. Fetch the associated Collectible and User data in parallel
         const [collectibleResponse, ownerResponse] = await Promise.all([
-            axios.get(`${API_BASE_URL}/Collectible/getCollectibleByCollectibleId`, {
+            axios.get(`${NEXT_PUBLIC_API_BASE_URL}/Collectible/getCollectibleByCollectibleId`, {
                 params: { collectibleId: userCollectible.collectibleId },
                 headers: { 'Authorization': `Bearer ${token.accessToken}` }
             }),
-            axios.get(`${API_BASE_URL}/User/getUserByUserId`, {
+            axios.get(`${NEXT_PUBLIC_API_BASE_URL}/User/getUserByUserId`, {
                 params: { userId: userCollectible.ownerId },
                 headers: { 'Authorization': `Bearer ${token.accessToken}` }
             })

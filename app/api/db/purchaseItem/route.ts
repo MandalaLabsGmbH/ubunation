@@ -2,7 +2,7 @@ import { NextResponse, NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import axios, { AxiosError } from 'axios';
 
-const API_BASE_URL = process.env.API_BASE_URL;
+const NEXT_PUBLIC_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export async function GET(request: NextRequest) {
     try {
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
 
         // Case 1: Fetch by a specific purchaseId (for the receipts modal)
         if (purchaseId) {
-            const itemsResponse = await axios.get(`${API_BASE_URL}/PurchaseItem/getPurchaseItemsByPurchaseId`, {
+            const itemsResponse = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/PurchaseItem/getPurchaseItemsByPurchaseId`, {
                 params: { purchaseId: parseInt(purchaseId) },
                 headers: { 'Authorization': `Bearer ${token.accessToken}` }
             });
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
         } 
         // Case 2: Fetch all items for the logged-in user (for the profile page)
         else if (token.email) {
-            const userResponse = await axios.get(`${API_BASE_URL}/User/getUserByEmail`, {
+            const userResponse = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/User/getUserByEmail`, {
                 params: { email: token.email },
                 headers: { 'Authorization': `Bearer ${token.accessToken}` }
             });
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
                 return NextResponse.json({ message: 'User not found' }, { status: 404 });
             }
 
-            const purchasesResponse = await axios.get(`${API_BASE_URL}/Purchase/getPurchasesByUserId`, {
+            const purchasesResponse = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/Purchase/getPurchasesByUserId`, {
                 params: { userId: userId },
                 headers: { 'Authorization': `Bearer ${token.accessToken}` }
             });
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const itemPromises = userPurchases.map((purchase: any) => 
-                axios.get(`${API_BASE_URL}/PurchaseItem/getPurchaseItemsByPurchaseId`, {
+                axios.get(`${NEXT_PUBLIC_API_BASE_URL}/PurchaseItem/getPurchaseItemsByPurchaseId`, {
                     params: { purchaseId: purchase.purchaseId },
                     headers: { 'Authorization': `Bearer ${token.accessToken}` }
                 }).then(res => res.data)
@@ -62,14 +62,14 @@ export async function GET(request: NextRequest) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             purchaseItems.map(async (item: any) => {
                 try {
-                    const collectibleResponse = await axios.get(`${API_BASE_URL}/Collectible/getCollectibleByCollectibleId`, {
+                    const collectibleResponse = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/Collectible/getCollectibleByCollectibleId`, {
                         params: { collectibleId: item.itemId },
                         headers: { 'Authorization': `Bearer ${token.accessToken}` }
                     });
 
                     let userCollectibleData = null;
                     if (item.purchasedUserItemId) {
-                        const userCollectibleResponse = await axios.get(`${API_BASE_URL}/UserCollectible/getUserCollectibleByUserCollectibleId`, {
+                        const userCollectibleResponse = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/UserCollectible/getUserCollectibleByUserCollectibleId`, {
                             params: { userCollectibleId: item.purchasedUserItemId },
                             headers: { 'Authorization': `Bearer ${token.accessToken}` }
                         });

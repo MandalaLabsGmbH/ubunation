@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import axios, { AxiosError } from 'axios';
 
-const API_BASE_URL = process.env.API_BASE_URL;
+const NEXT_PUBLIC_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export async function GET(request: NextRequest) {
     try {
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
         }
 
         // Make the API call to get the project data.
-        const response = await axios.get(`${API_BASE_URL}/Project/getProjectByProjectId`, {
+        const response = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/Project/getProjectByProjectId`, {
             params: { projectId },
         });
 

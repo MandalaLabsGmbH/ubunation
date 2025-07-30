@@ -2,7 +2,7 @@ import { NextResponse, NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import axios, { AxiosError } from 'axios';
 
-const API_BASE_URL = process.env.API_BASE_URL;
+const NEXT_PUBLIC_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 // GET function remains the same
 export async function GET(request: NextRequest) {
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ message: 'Email is required' }, { status: 400 });
         }
         
-        const userResponse = await axios.get(`${API_BASE_URL}/User/getUserByEmail`, {
+        const userResponse = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/User/getUserByEmail`, {
             params: { email },
             headers: { 'Authorization': `Bearer ${token.accessToken}` }
         });
@@ -47,7 +47,7 @@ export async function PATCH(request: NextRequest) {
         }
 
         // Step 1: Get the user's internal database ID.
-        const userResponse = await axios.get(`${API_BASE_URL}/User/getUserByEmail`, {
+        const userResponse = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/User/getUserByEmail`, {
             params: { email: token.email },
             headers: { 'Authorization': `Bearer ${token.accessToken}` }
         });
@@ -62,7 +62,7 @@ export async function PATCH(request: NextRequest) {
         const { username, authData } = body;
 
         // Step 3: Call the correct backend endpoint with the userId.
-        const response = await axios.patch(`${API_BASE_URL}/User/updateUserByUserId`, 
+        const response = await axios.patch(`${NEXT_PUBLIC_API_BASE_URL}/User/updateUserByUserId`, 
             { 
                 userId: userId, 
                 username, 

@@ -2,7 +2,7 @@ import { NextResponse, NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt"; // This is used to optionally get a user session
 import axios, { AxiosError } from 'axios';
 
-const API_BASE_URL = process.env.API_BASE_URL;
+const NEXT_PUBLIC_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export async function POST(request: NextRequest) {
     try {
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
 
         // The Authorization header is removed from this call. The corresponding endpoint
         // on your main backend API must now be public.
-        const response = await axios.post(`${API_BASE_URL}/Purchase/createPurchase`, payload);
+        const response = await axios.post(`${NEXT_PUBLIC_API_BASE_URL}/Purchase/createPurchase`, payload);
 
         // Return the response from your main backend, which should include the new purchaseId.
         return NextResponse.json(response.data);

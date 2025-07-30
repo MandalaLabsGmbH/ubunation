@@ -2,7 +2,7 @@ import { NextResponse, NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import axios, { AxiosError } from 'axios';
 
-const API_BASE_URL = process.env.API_BASE_URL;
+const NEXT_PUBLIC_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 type CartItem = {
     price: number;
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
         }
 
         // First, get the internal userId from your database using the email.
-        const userResponse = await axios.get(`${API_BASE_URL}/User/getUserByEmail`, {
+        const userResponse = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/User/getUserByEmail`, {
             params: { email: token.email },
             headers: {
                 'Authorization': `Bearer ${token.accessToken}`
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
         }
 
         // Now, use the correct internal userId to fetch the purchases.
-        const response = await axios.get(`${API_BASE_URL}/Purchase/getPurchasesByUserId`, {
+        const response = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/Purchase/getPurchasesByUserId`, {
             params: { 
                 userId: userId,
             },
@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
 
         if (token && token.email && token.accessToken) {
             try {
-                const userResponse = await axios.get(`${API_BASE_URL}/User/getUserByEmail?email=${token.email}`, {
+                const userResponse = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/User/getUserByEmail?email=${token.email}`, {
                     headers: { 'Authorization': `Bearer ${token.accessToken}` }
                 });
                 if (userResponse.data && userResponse.data.userId) {
@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
             ...requestData
         };
 
-        const response = await axios.post(`${API_BASE_URL}/Purchase/createPurchase`, payload);
+        const response = await axios.post(`${NEXT_PUBLIC_API_BASE_URL}/Purchase/createPurchase`, payload);
 
         return NextResponse.json(response.data);
 

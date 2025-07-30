@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import axios from 'axios';
 
-const API_BASE_URL = process.env.API_BASE_URL;
+const NEXT_PUBLIC_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export async function POST(request: NextRequest) {
     try {
@@ -14,8 +14,8 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ message: 'A purchase ID is required.' }, { status: 400 });
         }
         
-        if (!API_BASE_URL) {
-            throw new Error("API_BASE_URL is not configured.");
+        if (!NEXT_PUBLIC_API_BASE_URL) {
+            throw new Error("NEXT_PUBLIC_API_BASE_URL is not configured.");
         }
 
         const payload = { 
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
             purchaseId: purchaseId 
         };
 
-        const stripeLambdaUrl = `${API_BASE_URL}/PurchaseProcess/create_stripe_payment_intent`;
+        const stripeLambdaUrl = `${NEXT_PUBLIC_API_BASE_URL}/PurchaseProcess/create_stripe_payment_intent`;
 
         const lambdaResponse = await axios.post(stripeLambdaUrl, payload);
 
