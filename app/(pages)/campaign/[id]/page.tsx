@@ -1,5 +1,6 @@
 import CampaignTemplate from '@/app/components/CampaignTemplate';
 import { notFound } from 'next/navigation';
+import { headers } from 'next/headers';
 
 // Define a type for a single collectible, reflecting the multilingual structure
 interface Collectible {
@@ -10,11 +11,14 @@ interface Collectible {
     url: string;
     img: string;
   };
+  price?: { base: string };
 }
 
+// This function now calls our new, dedicated API route
 async function getCollectible(id: string): Promise<Collectible | null> {
     try {
         const res = await fetch(`${process.env.NEXTAUTH_URL}/api/db/collectible?collectibleId=${id}`, {
+            headers: new Headers(await headers()),
             cache: 'no-store'
         });
 
@@ -29,6 +33,7 @@ async function getCollectible(id: string): Promise<Collectible | null> {
     }
 }
 
+// The Fix: Remove the custom PageProps interface and type the props directly.
 export default async function CampaignPage({ params }: { params: { id: string } }) {
     const collectible = await getCollectible(params.id);
 
@@ -37,8 +42,7 @@ export default async function CampaignPage({ params }: { params: { id: string } 
         notFound();
     }
 
-    // The Fix: Pass the entire 'collectible' object as a single prop.
-    // This matches what the CampaignTemplate component now expects.
+    // Pass the entire 'collectible' object as a single prop.
     return (
         <CampaignTemplate collectible={collectible} />
     );

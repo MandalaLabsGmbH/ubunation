@@ -6,6 +6,7 @@ import { headers } from 'next/headers';
 interface UserCollectibleDetails {
   userCollectible: {
     mint: number;
+    userCollectibleId: number;
   };
   collectible: {
     collectibleId: number;
@@ -22,7 +23,7 @@ interface UserCollectibleDetails {
 // This function now calls our new, dedicated API route
 async function getDetails(id: string): Promise<UserCollectibleDetails | null> {
     try {
-        const res = await fetch(`${process.env.NEXTAUTH_URL}/api/db/userCollectibleDetails?id=${id}`, {
+        const res = await fetch(`${process.env.NEXTAUTH_URL}/api/db/user-collectible-details?id=${id}`, {
             headers: new Headers(await headers()),
             cache: 'no-store'
         });
@@ -38,6 +39,7 @@ async function getDetails(id: string): Promise<UserCollectibleDetails | null> {
     }
 }
 
+// The Fix: Remove the custom PageProps interface and type the props directly.
 export default async function UserCollectiblePage({ params }: { params: { id: string } }) {
     const details = await getDetails(params.id);
 
