@@ -4,6 +4,91 @@ import axios, { AxiosError } from 'axios';
 
 const API_BASE_URL = process.env.API_BASE_URL;
 
+type CartItem = {
+    price: number;
+    quantity: number;
+    // ... other properties can exist
+};
+
+// This function fetches all purchases for the logged-in user.
+export async function GET(request: NextRequest) {
+    try {
+        const token = await getToken({ req: request, secret: process.env.AUTH_SECRET });
+        if (!token?.accessToken || !token.email) {
+            return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+        }
+
+        // First, get the internal userId from your database using the email.
+        const userResponse = await axios.get(`${API_BASE_URL}/User/getUserByEmail`, {
+            params: { email: token.email },
+            headers: {
+                'Authorization': `Bearer ${token.accessToken}`
+            }
+        });
+
+        const userId = userResponse.data.userId;
+        if (!userId) {
+            return NextResponse.json({ message: 'User not found in database.' }, { status: 404 });
+        }
+
+        // Now, use the correct internal userId to fetch the purchases.
+        const response = await axios.get(`${API_BASE_URL}/Purchase/getPurchasesByUserId`, {
+            params: { 
+                userId: userId,
+            },
+            headers: {
+                'Authorization': `Bearer ${token.accessToken}`
+            }
+        });
+
+        // The Fix: Calculate both totalPrice and itemCount on the fly if they are missing.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const purchasesWithEnhancements = response.data.map((purchase: any) => {
+            const enhancedPurchase = { ...purchase };
+
+            // Check if a cart exists to perform calculations.
+            if (purchase.purchaseData && Array.isArray(purchase.purchaseData.cart)) {
+                // Calculate totalPrice if it's missing.
+                if (!purchase.purchaseData.totalPrice) {
+                    const calculatedTotal = purchase.purchaseData.cart.reduce((total: number, item: CartItem) => {
+                        const price = typeof item.price === 'number' ? item.price : 0;
+                        const quantity = typeof item.quantity === 'number' ? item.quantity : 0;
+                        return total + (price * quantity);
+                    }, 0);
+                    
+                    enhancedPurchase.purchaseData = {
+                        ...enhancedPurchase.purchaseData,
+                        totalPrice: calculatedTotal
+                    };
+                }
+
+                // Always calculate itemCount from the cart data for consistency.
+                const calculatedItemCount = purchase.purchaseData.cart.reduce((count: number, item: CartItem) => {
+                    const quantity = typeof item.quantity === 'number' ? item.quantity : 0;
+                    return count + quantity;
+                }, 0);
+
+                enhancedPurchase.itemCount = calculatedItemCount;
+            }
+            
+            return enhancedPurchase;
+        });
+
+        return NextResponse.json(purchasesWithEnhancements);
+
+    } catch (e) {
+        console.error("API route /api/db/purchases error:", e);
+        if (axios.isAxiosError(e)) {
+            const err = e as AxiosError;
+            return NextResponse.json(
+                { message: err.message, details: err.response?.data },
+                { status: err.response?.status || 500 }
+            );
+        }
+        return NextResponse.json({ message: 'An internal server error occurred' }, { status: 500 });
+    }
+}
+
 export async function POST(request: NextRequest) {
     try {
         const token = await getToken({ req: request, secret: process.env.AUTH_SECRET });

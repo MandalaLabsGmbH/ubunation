@@ -4,96 +4,92 @@ import { useState, useEffect } from 'react';
 import { usePurchasesModal } from '@/app/contexts/PurchasesModalContext';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { X, ArrowLeft, Loader2, Calendar } from 'lucide-react';
+import { X, ArrowLeft, Loader2 } from 'lucide-react';
 import Image from 'next/image';
+import { useTranslation } from '@/app/hooks/useTranslation';
 
-// --- Mock Data and Types (replace with actual API calls) ---
-// These types define the data structure we expect from the backend.
+// --- Types for API Data ---
 type Purchase = {
   purchaseId: number;
   updatedDt: string;
   purchaseData: {
     totalPrice: number;
-    cart: { quantity: number }[];
   };
+  itemCount: number;
 };
 
 type PurchaseDetailItem = {
-  userCollectible: { mint: number };
+  purchaseItemId: number;
+  purchasedUserItemId: number;
+  itemTable: string;
+  itemId: number;
   collectible: {
     name: { en: string; de: string };
-    price: number;
+    price?: { base: string }; // Updated type for price
     imageRef: { url: string };
+  };
+  userCollectible: {
+    mint: number;
   };
 };
 
-// This function simulates fetching a list of purchases.
-const fetchPurchases = async (page: number): Promise<{ purchases: Purchase[], hasMore: boolean }> => {
-  console.log(`Fetching page ${page}...`);
-  // In a real app, this would be: await fetch(`/api/db/purchases?page=${page}&limit=10`);
-  return new Promise(resolve => setTimeout(() => {
-    const mockPurchases: Purchase[] = Array.from({ length: 10 }, (_, i) => ({
-      purchaseId: page * 10 + i,
-      updatedDt: new Date(2025, 4, 5 + i).toISOString(),
-      purchaseData: {
-        totalPrice: 29.97,
-        cart: [{ quantity: 2 }, { quantity: 1 }],
-      },
-    }));
-    resolve({ purchases: mockPurchases, hasMore: page < 2 }); // Simulate 3 pages of data
-  }, 1000));
+// --- API Fetching Functions ---
+const fetchPurchases = async (): Promise<Purchase[]> => {
+  try {
+    const response = await fetch(`/api/db/purchase`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch purchases');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
 };
 
-// This function simulates fetching the details for a single purchase.
 const fetchPurchaseDetails = async (purchaseId: number): Promise<PurchaseDetailItem[]> => {
-  console.log(`Fetching details for purchase ${purchaseId}...`);
-  // In a real app, this would be: await fetch(`/api/db/purchaseItems?purchaseId=${purchaseId}`);
-  return new Promise(resolve => setTimeout(() => {
-    resolve([
-      { userCollectible: { mint: 55 }, collectible: { name: { en: 'Lion King', de: 'König der Löwen' }, price: 9.99, imageRef: { url: 'https://ubunation.s3.eu-central-1.amazonaws.com/collections/wlfa/springboks1' } } },
-      { userCollectible: { mint: 101 }, collectible: { name: { en: 'Lion King', de: 'König der Löwen' }, price: 9.99, imageRef: { url: 'https://ubunation.s3.eu-central-1.amazonaws.com/collections/wlfa/springboks1' } } },
-      { userCollectible: { mint: 23 }, collectible: { name: { en: 'Elk', de: 'Elch' }, price: 9.99, imageRef: { url: 'https://deins.s3.eu-central-1.amazonaws.com/images/ubu2' } } },
-    ]);
-  }, 1000));
+  try {
+    const response = await fetch(`/api/db/purchaseItem?purchaseId=${purchaseId}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch purchase details');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
 };
-// --- End Mock Data ---
 
-
-// Main Component
+// --- Main Component ---
 export default function PurchasesModal() {
   const { isOpen, closeModal } = usePurchasesModal();
+  const { language } = useTranslation();
   const [view, setView] = useState<'list' | 'detail'>('list');
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [selectedPurchase, setSelectedPurchase] = useState<Purchase | null>(null);
   const [purchaseDetails, setPurchaseDetails] = useState<PurchaseDetailItem[]>([]);
-  const [page, setPage] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
 
   useEffect(() => {
-    if (isOpen) {
-      loadPurchases(0, true);
-    } else {
-      // Reset state when modal is closed
+    const loadAndSortPurchases = async () => {
+      if (!isOpen) return;
+      setIsLoading(true);
+      const fetchedPurchases = await fetchPurchases();
+      const sortedPurchases = fetchedPurchases.sort((a, b) => new Date(b.updatedDt).getTime() - new Date(a.updatedDt).getTime());
+      setPurchases(sortedPurchases);
+      setIsLoading(false);
+    };
+
+    loadAndSortPurchases();
+
+    if (!isOpen) {
       setTimeout(() => {
         setView('list');
         setPurchases([]);
-        setPage(0);
-        setHasMore(true);
       }, 300);
     }
   }, [isOpen]);
-
-  const loadPurchases = async (pageToLoad: number, fresh = false) => {
-    if (isLoading || (!hasMore && !fresh)) return;
-    setIsLoading(true);
-    const { purchases: newPurchases, hasMore: newHasMore } = await fetchPurchases(pageToLoad);
-    setPurchases(prev => fresh ? newPurchases : [...prev, ...newPurchases]);
-    setHasMore(newHasMore);
-    setPage(pageToLoad);
-    setIsLoading(false);
-  };
 
   const handleSelectPurchase = async (purchase: Purchase) => {
     setSelectedPurchase(purchase);
@@ -121,23 +117,20 @@ export default function PurchasesModal() {
     <>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">My Purchases</h2>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm"><Calendar className="h-4 w-4 mr-2" /> Filter by Date</Button>
-        </div>
       </div>
       <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2">
-        {purchases.map(p => (
-          <Card key={p.purchaseId} className="p-4 hover:bg-muted cursor-pointer transition-colors" onClick={() => handleSelectPurchase(p)}>
-            <div className="flex justify-between items-center">
-              <div className="font-semibold">{formatDate(p.updatedDt)}</div>
-              <div className="text-muted-foreground">{p.purchaseData.cart.reduce((sum, item) => sum + item.quantity, 0)} collectibles purchased</div>
-              <div className="font-bold">€{p.purchaseData.totalPrice.toFixed(2)}</div>
-            </div>
-          </Card>
-        ))}
-        {isLoading && <div className="text-center py-4"><Loader2 className="h-6 w-6 animate-spin mx-auto" /></div>}
-        {hasMore && !isLoading && (
-          <Button className="w-full mt-4" variant="outline" onClick={() => loadPurchases(page + 1)}>Load More</Button>
+        {isLoading ? (
+          <div className="text-center py-4"><Loader2 className="h-6 w-6 animate-spin mx-auto" /></div>
+        ) : (
+          purchases.map(p => (
+            <Card key={p.purchaseId} className="p-4 hover:bg-muted cursor-pointer transition-colors" onClick={() => handleSelectPurchase(p)}>
+              <div className="flex justify-between items-center">
+                <div className="font-semibold">{formatDate(p.updatedDt)}</div>
+                <div className="text-muted-foreground">{p.itemCount} collectibles purchased</div>
+                <div className="font-bold">€{p.purchaseData.totalPrice.toFixed(2)}</div>
+              </div>
+            </Card>
+          ))
         )}
       </div>
     </>
@@ -158,16 +151,19 @@ export default function PurchasesModal() {
             <div className="text-center py-12"><Loader2 className="h-8 w-8 animate-spin mx-auto" /></div>
           ) : (
             <>
-              {purchaseDetails.map((item, index) => {
+              {purchaseDetails.map((item) => {
                 const imageUrl = `${item.collectible.imageRef.url}/${item.userCollectible.mint}.png`;
+                const displayName = item.collectible.name[language as 'en' | 'de'] || item.collectible.name.en;
+                // The Fix: Get the price from the collectible's price object.
+                const itemPrice = parseFloat(item.collectible.price?.base || '0');
                 return (
-                  <div key={index} className="flex items-center gap-4 py-2 border-b last:border-b-0">
-                    <Image src={imageUrl} alt={item.collectible.name.en} width={48} height={48} className="rounded-md bg-background" />
+                  <div key={item.purchaseItemId} className="flex items-center gap-4 py-2 border-b last:border-b-0">
+                    <Image src={imageUrl} alt={displayName} width={48} height={48} className="rounded-md bg-background" />
                     <div className="flex-grow">
-                      <p className="font-semibold">{item.collectible.name.en}</p>
+                      <p className="font-semibold">{displayName}</p>
                       <p className="text-xs text-muted-foreground">Mint #{item.userCollectible.mint}</p>
                     </div>
-                    <div className="font-semibold">€{item.collectible.price.toFixed(2)}</div>
+                    <div className="font-semibold">€{itemPrice.toFixed(2)}</div>
                   </div>
                 );
               })}

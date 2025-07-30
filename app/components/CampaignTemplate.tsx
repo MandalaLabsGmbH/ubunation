@@ -7,13 +7,14 @@ import { useCart } from '@/app/contexts/CartContext';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/app/hooks/useTranslation';
 
-// Define the props to accept a single 'collectible' object
+// Update the props to accept a single 'collectible' object
 interface CampaignTemplateProps {
   collectible: {
     collectibleId: number;
     name: { en: string; de: string; };
     description: { en: string; de: string; };
-    imageRef?: { url: string; img: string; };
+    imageRef?: { url: string; img: string };
+    price?: { base: string }; // Add the price object to the type
   };
 }
 
@@ -23,22 +24,21 @@ export default function CampaignTemplate({ collectible }: CampaignTemplateProps)
   const [activeTab, setActiveTab] = useState<'overview' | 'splits'>('overview');
   const { addToCart } = useCart();
   
-  // The safety check is now placed *after* all hooks have been called.
-  // This preserves the hook call order on every render.
   if (!collectible) {
-    return <div>Loading...</div>; // Or a more sophisticated loading component
+    return <div>Loading...</div>;
   }
 
-  // This code is now safe because it will only run if 'collectible' exists.
   const displayName = collectible.name[language] || collectible.name.en;
   const displayDescription = collectible.description[language] || collectible.description.en;
+  // The Fix: Get the price from the collectible data, default to 0 if not present.
+  const itemPrice = parseFloat(collectible.price?.base || '0');
 
   const handleAddToCart = () => {
     addToCart({
       collectibleId: collectible.collectibleId,
       name: displayName,
-      imageUrl: collectible.imageRef?.img || '',
-      price: 9.99,
+      imageUrl: collectible.imageRef?.url || '',
+      price: itemPrice, // Use the dynamic price
     });
     alert(`${displayName} has been added to your cart!`);
   };
@@ -49,6 +49,11 @@ export default function CampaignTemplate({ collectible }: CampaignTemplateProps)
       <Card className="bg-card shadow-lg rounded-lg mb-8">
         <CardContent className="p-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-4">
+            <div className="w-48 flex gap-2">
+                <Button className="w-full bg-blue-600 hover:bg-blue-700 px-8 py-3 rounded-full text-lg font-semibold shadow-lg transition-transform transform hover:scale-105" onClick={handleAddToCart}>
+                  {translate('buyNow')}
+                </Button>
+            </div>
             <h1 className="text-xl md:text-2xl font-bold text-foreground">{displayName}</h1>
           </div>
         </CardContent>
@@ -86,11 +91,6 @@ export default function CampaignTemplate({ collectible }: CampaignTemplateProps)
                   className="w-full h-auto"
                 />
               </Card>
-              <div className="flex pt-10">
-                <Button className="w-full bg-blue-600 hover:bg-blue-700 px-8 py-3 rounded-full text-lg font-semibold shadow-lg transition-transform transform hover:scale-105" onClick={handleAddToCart}>
-                  {translate('buyNow')}
-                </Button>
-            </div>
             </div>
             <div className="md:col-span-2">
               <Card className="bg-card shadow-lg rounded-lg w-full">
