@@ -4,19 +4,19 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useSession } from 'next-auth/react';
 import { inter } from './fonts';
-import LogoutButton from './logout-button';
 import { ThemeToggleButton } from './theme-toggle-button';
 import { useAuthModal } from '@/app/contexts/AuthModalContext';
 import { useCart } from '@/app/contexts/CartContext';
 import { ShoppingCart } from 'lucide-react';
-import LanguageSelector from '@/app/components/LanguageSelector'; // Import the new component
-import { useTranslation } from '@/app/hooks/useTranslation'; // Import the translation hook
+import LanguageSelector from '@/app/components/LanguageSelector';
+import { useTranslation } from '@/app/hooks/useTranslation';
+import UserDropdown from '@/app/components/user/UserDropdown'; // Import the new component
 
 export default function Header() {
   const { data: session } = useSession();
   const { openModal } = useAuthModal();
   const { openCart, itemCount } = useCart();
-  const { translate } = useTranslation(); // Use the hook
+  const { translate } = useTranslation();
 
   return (
     <header className={`${inter.className} w-full py-4 border-b`}>
@@ -33,14 +33,6 @@ export default function Header() {
         </Link>
 
         <div className="flex items-center space-x-4 text-sm">
-          {session ? (
-            <LogoutButton />
-          ) : (
-            <button onClick={() => openModal('/')} className="font-semibold text-foreground/80 hover:text-foreground transition-colors">
-              {translate('login')}
-            </button>
-          )}
-
           <button onClick={openCart} className="relative text-foreground/80 hover:text-foreground transition-colors">
             <ShoppingCart className="h-5 w-5" />
             {itemCount > 0 && (
@@ -50,8 +42,17 @@ export default function Header() {
             )}
           </button>
           
-          <LanguageSelector /> {/* Add the language selector here */}
+          <LanguageSelector />
           <ThemeToggleButton />
+
+          {/* The Fix: Conditionally render the UserDropdown or the Login button */}
+          {session ? (
+            <UserDropdown />
+          ) : (
+            <button onClick={() => openModal('/')} className="font-semibold text-foreground/80 hover:text-foreground transition-colors">
+              {translate('login')}
+            </button>
+          )}
         </div>
       </nav>
     </header>

@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { X, CheckCircle, XCircle } from 'lucide-react';
 import Image from 'next/image';
+import { useCart } from '@/app/contexts/CartContext'; // Import useCart
 
 // --- Stripe Elements Imports ---
 import { loadStripe } from '@stripe/stripe-js';
@@ -23,20 +24,21 @@ export default function PaymentModal() {
     closePayment,
     resetPayment,
     clientSecret,
-    paypalOrderID, // Get the PayPal orderID
+    paypalOrderID,
     errorMessage,
     setPaymentView,
     setErrorMessage
   } = usePayment();
+  
+  const { clearCart } = useCart();
 
-  // This useEffect is no longer needed for PayPal's new flow
   useEffect(() => {
     if (!isPaymentOpen) return;
     const handleMessage = (event: MessageEvent) => {
       if (event.origin !== window.location.origin) return;
-      if (event.data === 'stripe-payment-success') {
+      if (event.data === 'stripe-payment-success' || event.data === 'paypal-payment-success') {
         setPaymentView('SUCCESS');
-      } else if (event.data === 'stripe-payment-cancel') {
+      } else if (event.data === 'stripe-payment-cancel' || event.data === 'paypal-payment-cancel') {
         setErrorMessage('Payment was cancelled.');
         setPaymentView('ERROR');
       }
@@ -54,6 +56,11 @@ export default function PaymentModal() {
       setTimeout(resetPayment, 300);
   }
 
+  const handleSuccessAndClear = () => {
+    clearCart();
+    handleCloseAndReset();
+  }
+
   const renderContent = () => {
     switch (paymentView) {
       case 'SELECT_METHOD':
@@ -69,7 +76,6 @@ export default function PaymentModal() {
           </Elements>
         );
       
-      // The Fix: Render the new PayPal Buttons component
       case 'PAYPAL_CHECKOUT':
         if (!paypalOrderID) {
             return <ErrorView message="Could not create PayPal payment session." onRetry={resetPayment} onClose={handleCloseAndReset} />;
@@ -90,7 +96,7 @@ export default function PaymentModal() {
                 <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
                 <h2 className="text-2xl font-bold mb-2">Payment Successful!</h2>
                 <p className="text-muted-foreground mb-6">Your collectibles have been added to your account. Check your email for a receipt.</p>
-                <Button onClick={handleCloseAndReset}>Done</Button>
+                <Button onClick={handleSuccessAndClear}>Done</Button>
             </div>
         );
 

@@ -13,6 +13,7 @@ interface Collectible {
   description: { en: string; de: string; };
   imageRef?: {
     url: string;
+    img: string;
   };
 }
 
@@ -51,7 +52,7 @@ export default function HomePageClient({ heroCollectible, featuredCollectibles }
             <div className="md:w-1/2 flex justify-center">
             <Link href={`/campaign/${heroCollectible.collectibleId}`} className="hover:underline">
               <Image 
-                src={heroCollectible.imageRef.url} 
+                src={heroCollectible.imageRef.img} 
                 alt={getLocalizedString(heroCollectible.name, language)} 
                 className="rounded-lg shadow-2xl w-full max-w-md"
                 width={500}
@@ -80,7 +81,7 @@ export default function HomePageClient({ heroCollectible, featuredCollectibles }
                     {collectible.imageRef && (
                       <Link href={`/campaign/${collectible.collectibleId}`} className="hover:underline">
                           <Image 
-                              src={collectible.imageRef.url}
+                              src={collectible.imageRef.img}
                               alt={getLocalizedString(collectible.name, language)} 
                               className="w-full h-56 object-cover"
                               width={500}

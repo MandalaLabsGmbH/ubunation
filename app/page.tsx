@@ -8,6 +8,7 @@ interface Collectible {
   description: { en: string; de: string; };
   imageRef?: {
     url: string;
+    img: string;
   };
 }
 

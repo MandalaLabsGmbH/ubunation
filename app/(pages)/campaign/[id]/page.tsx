@@ -8,6 +8,7 @@ interface Collectible {
   description: { en: string; de: string; };
   imageRef?: {
     url: string;
+    img: string;
   };
 }
 
@@ -32,7 +33,7 @@ export default async function CampaignPage({ params }: { params: { id: string } 
     const collectible = await getCollectible(params.id);
 
     // Ensure the collectible and its essential, language-specific fields exist
-    if (!collectible || !collectible.imageRef?.url || !collectible.name?.en) {
+    if (!collectible || !collectible.imageRef?.img || !collectible.name?.en) {
         notFound();
     }
 

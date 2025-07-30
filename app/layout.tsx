@@ -11,7 +11,9 @@ import { CartProvider } from "@/app/contexts/CartContext";
 import CartModal from "@/app/components/cart/CartModal";
 import { PaymentProvider } from "@/app/contexts/PaymentContext";
 import PaymentModal from "@/app/components/payment/PaymentModal";
-import { LanguageProvider } from "@/app/contexts/LanguageContext"; // Import LanguageProvider
+import { LanguageProvider } from "@/app/contexts/LanguageContext";
+import { PurchasesModalProvider } from "@/app/contexts/PurchasesModalContext"; 
+import PurchasesModal from "@/app/components/user/purchases/PurchasesModal";
 
 export const metadata: Metadata = {
   title: "Ubunation",
@@ -26,22 +28,25 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </Head>
             <body>
         <AuthSessionProvider>
-          <LanguageProvider> {/* Wrap with LanguageProvider */}
+          <LanguageProvider>
             <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
               <AuthModalProvider>
                 <CartProvider>
-                  <PaymentProvider>
-                    <div className="flex flex-col min-h-screen bg-background text-foreground">
-                      <Header />
-                      <main className="flex-grow container mx-auto p-6">
-                          {children}
-                      </main>
-                      <Footer />
-                      <AuthModal />
-                      <CartModal />
-                      <PaymentModal />
-                    </div>
-                  </PaymentProvider>
+                  <PurchasesModalProvider> {/* Add new provider */}
+                    <PaymentProvider>
+                      <div className="flex flex-col min-h-screen bg-background text-foreground">
+                        <Header />
+                        <main className="flex-grow container mx-auto p-6">
+                            {children}
+                        </main>
+                        <Footer />
+                        <AuthModal />
+                        <CartModal />
+                        <PaymentModal />
+                        <PurchasesModal /> {/* Add new modal */}
+                      </div>
+                    </PaymentProvider>
+                  </PurchasesModalProvider>
                 </CartProvider>
               </AuthModalProvider>
             </ThemeProvider>

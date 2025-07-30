@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
 import { useCart, CartItem } from '@/app/contexts/CartContext';
 import { usePayment } from '@/app/contexts/PaymentContext';
@@ -8,19 +8,18 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { X, ShoppingCart, ChevronLeft, ChevronRight } from 'lucide-react';
 
-function CartItemRow({ item, onRemove }: { item: CartItem; onRemove: (id: number, quantity: number) => void; }) {
-    const [removalQuantity, setRemovalQuantity] = useState(1);
-    useEffect(() => { setRemovalQuantity(1); }, [item.quantity]);
+// The CartItemRow now uses the new updateItemQuantity function
+function CartItemRow({ item, onUpdateQuantity, onRemove }: { item: CartItem; onUpdateQuantity: (id: number, quantity: number) => void; onRemove: (id: number) => void; }) {
+    
     const handleRemoveClick = () => {
-        const message = item.quantity === 1
-            ? 'This will remove the item from your cart. Are you sure?'
-            : `This will remove ${removalQuantity} item${removalQuantity > 1 ? 's' : ''} from your cart. Are you sure?`;
-        if (window.confirm(message)) {
-            onRemove(item.collectibleId, removalQuantity);
+        if (window.confirm('This will remove the item from your cart. Are you sure?')) {
+            onRemove(item.collectibleId);
         }
     };
-    const incrementRemoval = () => setRemovalQuantity(q => Math.min(q + 1, item.quantity));
-    const decrementRemoval = () => setRemovalQuantity(q => Math.max(q - 1, 1));
+
+    const increment = () => onUpdateQuantity(item.collectibleId, item.quantity + 1);
+    const decrement = () => onUpdateQuantity(item.collectibleId, item.quantity - 1);
+
     return (
         <div className="flex items-start justify-between gap-4 mb-4 border-b pb-4">
             <div className="flex items-start gap-4">
@@ -38,13 +37,12 @@ function CartItemRow({ item, onRemove }: { item: CartItem; onRemove: (id: number
             <div className="flex flex-col items-end">
                 <p className="font-semibold">€{(item.price * item.quantity).toFixed(2)}</p>
                 <div className="flex items-center gap-2 mt-2">
-                    {item.quantity > 1 && (
-                        <div className="flex items-center gap-1 border rounded-md p-1">
-                            <button onClick={decrementRemoval} className="hover:bg-muted rounded-sm"><ChevronLeft size={14} /></button>
-                            <span className="text-sm font-bold w-4 text-center">{removalQuantity}</span>
-                            <button onClick={incrementRemoval} className="hover:bg-muted rounded-sm"><ChevronRight size={14} /></button>
-                        </div>
-                    )}
+                    {/* The Fix: The quantity selector is now always visible. */}
+                    <div className="flex items-center gap-1 border rounded-md p-1">
+                        <button onClick={decrement} className="hover:bg-muted rounded-sm"><ChevronLeft size={14} /></button>
+                        <span className="text-sm font-bold w-4 text-center">{item.quantity}</span>
+                        <button onClick={increment} className="hover:bg-muted rounded-sm"><ChevronRight size={14} /></button>
+                    </div>
                     <button onClick={handleRemoveClick} className="text-xs text-red-500 hover:underline">Remove</button>
                 </div>
             </div>
@@ -53,8 +51,7 @@ function CartItemRow({ item, onRemove }: { item: CartItem; onRemove: (id: number
 }
 
 export default function CartModal() {
-  const { isOpen, closeCart, cartItems, clearCart, itemCount, removeFromCart } = useCart();
-  // Get the new openPayment function from the context
+  const { isOpen, closeCart, cartItems, clearCart, itemCount, updateItemQuantity } = useCart();
   const { openPayment } = usePayment();
   const [showConfirm, setShowConfirm] = useState(false);
 
@@ -64,8 +61,12 @@ export default function CartModal() {
     clearCart();
     setShowConfirm(false);
   };
+  
+  // The "Remove" button will now call this function to set the quantity to 0
+  const handleRemoveItem = (collectibleId: number) => {
+      updateItemQuantity(collectibleId, 0);
+  };
 
-  // This function now correctly closes the cart and opens the payment modal
   const handleCheckout = () => {
     closeCart();
     openPayment();
@@ -84,7 +85,7 @@ export default function CartModal() {
         {itemCount > 0 ? (
           <>
             <div className="max-h-96 overflow-y-auto pr-4 -mr-4 mb-4">
-                {cartItems.map(item => (<CartItemRow key={item.collectibleId} item={item} onRemove={removeFromCart} />))}
+                {cartItems.map(item => (<CartItemRow key={item.collectibleId} item={item} onUpdateQuantity={updateItemQuantity} onRemove={handleRemoveItem} />))}
             </div>
             <div className="border-t pt-4">
                 <div className="flex justify-between items-center font-bold text-lg mb-4">

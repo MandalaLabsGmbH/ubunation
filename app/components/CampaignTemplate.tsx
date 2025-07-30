@@ -13,7 +13,7 @@ interface CampaignTemplateProps {
     collectibleId: number;
     name: { en: string; de: string; };
     description: { en: string; de: string; };
-    imageRef?: { url: string; };
+    imageRef?: { url: string; img: string; };
   };
 }
 
@@ -37,7 +37,7 @@ export default function CampaignTemplate({ collectible }: CampaignTemplateProps)
     addToCart({
       collectibleId: collectible.collectibleId,
       name: displayName,
-      imageUrl: collectible.imageRef?.url || '',
+      imageUrl: collectible.imageRef?.img || '',
       price: 9.99,
     });
     alert(`${displayName} has been added to your cart!`);
@@ -49,11 +49,6 @@ export default function CampaignTemplate({ collectible }: CampaignTemplateProps)
       <Card className="bg-card shadow-lg rounded-lg mb-8">
         <CardContent className="p-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-48 flex gap-2">
-                <Button className="w-full bg-blue-600 hover:bg-blue-700 px-8 py-3 rounded-full text-lg font-semibold shadow-lg transition-transform transform hover:scale-105" onClick={handleAddToCart}>
-                  {translate('buyNow')}
-                </Button>
-            </div>
             <h1 className="text-xl md:text-2xl font-bold text-foreground">{displayName}</h1>
           </div>
         </CardContent>
@@ -84,13 +79,18 @@ export default function CampaignTemplate({ collectible }: CampaignTemplateProps)
             <div className="md:col-span-1">
               <Card className="bg-card shadow-lg rounded-lg overflow-hidden">
                 <Image
-                  src={collectible.imageRef?.url || ''}
+                  src={collectible.imageRef?.img || ''}
                   alt={displayName}
                   width={800}
                   height={800}
                   className="w-full h-auto"
                 />
               </Card>
+              <div className="flex pt-10">
+                <Button className="w-full bg-blue-600 hover:bg-blue-700 px-8 py-3 rounded-full text-lg font-semibold shadow-lg transition-transform transform hover:scale-105" onClick={handleAddToCart}>
+                  {translate('buyNow')}
+                </Button>
+            </div>
             </div>
             <div className="md:col-span-2">
               <Card className="bg-card shadow-lg rounded-lg w-full">

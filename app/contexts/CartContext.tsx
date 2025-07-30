@@ -3,7 +3,6 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import Cookies from 'js-cookie';
 
-// Update the CartItem interface to include quantity
 export interface CartItem {
   collectibleId: number;
   name: string;
@@ -12,7 +11,6 @@ export interface CartItem {
   quantity: number; 
 }
 
-// Update the context type to include the new remove function
 interface CartContextType {
   isOpen: boolean;
   cartItems: CartItem[];
@@ -20,6 +18,7 @@ interface CartContextType {
   closeCart: () => void;
   addToCart: (item: Omit<CartItem, 'quantity'>) => void;
   removeFromCart: (collectibleId: number, quantity: number) => void;
+  updateItemQuantity: (collectibleId: number, newQuantity: number) => void; // New function
   clearCart: () => void;
   itemCount: number;
 }
@@ -30,15 +29,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
-  // Load cart from cookies on initial render
   useEffect(() => {
     const storedCart = Cookies.get('shopping-cart');
     if (storedCart) {
-      setCartItems(JSON.parse(storedCart));
+      try {
+        setCartItems(JSON.parse(storedCart));
+      } catch (e) {
+        console.error("Failed to parse cart from cookies", e);
+      }
     }
   }, []);
 
-  // Save cart to cookies whenever it changes
   useEffect(() => {
     Cookies.set('shopping-cart', JSON.stringify(cartItems), { expires: 7 });
   }, [cartItems]);
@@ -49,7 +50,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const addToCart = (itemToAdd: Omit<CartItem, 'quantity'>) => {
     setCartItems(prevItems => {
       const existingItem = prevItems.find(item => item.collectibleId === itemToAdd.collectibleId);
-
       if (existingItem) {
         return prevItems.map(item =>
           item.collectibleId === itemToAdd.collectibleId
@@ -62,26 +62,37 @@ export function CartProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  // Function to remove a specific quantity of an item from the cart
   const removeFromCart = (collectibleId: number, quantityToRemove: number) => {
     setCartItems(prevItems => {
         const itemToUpdate = prevItems.find(item => item.collectibleId === collectibleId);
-
         if (itemToUpdate) {
             const newQuantity = itemToUpdate.quantity - quantityToRemove;
             if (newQuantity > 0) {
-                // If quantity is still > 0, update the item
                 return prevItems.map(item =>
                     item.collectibleId === collectibleId
                         ? { ...item, quantity: newQuantity }
                         : item
                 );
             } else {
-                // If quantity is 0 or less, remove the item completely
                 return prevItems.filter(item => item.collectibleId !== collectibleId);
             }
         }
-        return prevItems; // If item not found, return original state
+        return prevItems;
+    });
+  };
+
+  // The Fix: New function to directly set an item's quantity.
+  const updateItemQuantity = (collectibleId: number, newQuantity: number) => {
+    setCartItems(prevItems => {
+      if (newQuantity <= 0) {
+        // If the new quantity is 0 or less, remove the item from the cart.
+        return prevItems.filter(item => item.collectibleId !== collectibleId);
+      }
+      return prevItems.map(item =>
+        item.collectibleId === collectibleId
+          ? { ...item, quantity: newQuantity }
+          : item
+      );
     });
   };
 
@@ -91,7 +102,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const itemCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
-  const value = { isOpen, cartItems, openCart, closeCart, addToCart, removeFromCart, clearCart, itemCount };
+  const value = { isOpen, cartItems, openCart, closeCart, addToCart, removeFromCart, updateItemQuantity, clearCart, itemCount };
 
   return (
     <CartContext.Provider value={value}>
@@ -100,7 +111,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
   );
 }
 
-// Custom hook to use the CartContext
 export function useCart() {
   const context = useContext(CartContext);
   if (context === undefined) {
