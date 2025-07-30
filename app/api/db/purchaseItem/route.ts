@@ -26,9 +26,6 @@ export async function GET(request: NextRequest) {
         } 
         // Case 2: Fetch all items for the logged-in user (for the profile page)
         else if (token.email) {
-            // The Fix: Implement the multi-step fetch logic as you described.
-            
-            // Step A: Get the user's internal ID.
             const userResponse = await axios.get(`${API_BASE_URL}/User/getUserByEmail`, {
                 params: { email: token.email },
                 headers: { 'Authorization': `Bearer ${token.accessToken}` }
@@ -39,14 +36,12 @@ export async function GET(request: NextRequest) {
                 return NextResponse.json({ message: 'User not found' }, { status: 404 });
             }
 
-            // Step B: Get all of the user's purchases.
             const purchasesResponse = await axios.get(`${API_BASE_URL}/Purchase/getPurchasesByUserId`, {
                 params: { userId: userId },
                 headers: { 'Authorization': `Bearer ${token.accessToken}` }
             });
             const userPurchases = purchasesResponse.data;
 
-            // Step C: For each purchase, fetch its items and combine them.
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const itemPromises = userPurchases.map((purchase: any) => 
                 axios.get(`${API_BASE_URL}/PurchaseItem/getPurchaseItemsByPurchaseId`, {
@@ -56,7 +51,7 @@ export async function GET(request: NextRequest) {
             );
             
             const nestedItems = await Promise.all(itemPromises);
-            purchaseItems = nestedItems.flat(); // Flatten the array of arrays into a single list
+            purchaseItems = nestedItems.flat();
 
         } else {
             return NextResponse.json({ message: 'A purchaseId or user session is required' }, { status: 400 });
@@ -88,12 +83,17 @@ export async function GET(request: NextRequest) {
                     };
                 } catch (enrichError) {
                     console.error(`Failed to enrich item ${item.purchaseItemId}:`, enrichError);
-                    return item;
+                    // The Fix: Return the item without enrichment if an error occurs,
+                    // preventing the entire request from crashing.
+                    return { ...item, collectible: null, userCollectible: null };
                 }
             })
         );
+        
+        // Filter out any items that completely failed to load essential data
+        const finalItems = enrichedItems.filter(item => item.collectible);
 
-        return NextResponse.json(enrichedItems);
+        return NextResponse.json(finalItems);
 
     } catch (e) {
         console.error("API route /api/db/purchaseItems error:", e);

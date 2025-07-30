@@ -1,18 +1,17 @@
 'use client'
 
-import Image from 'next/image';
+import { useEffect } from 'react';
 import Link from 'next/link';
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/app/hooks/useTranslation';
+import { useUser, User } from '@/app/contexts/UserContext';
+import { useEditProfileModal } from '@/app/contexts/EditProfileModalContext';
+import CollectibleImage from '../../CollectibleImage';
 
 // --- Type Definitions ---
-interface User {
-    username?: string;
-    email: string;
-    authData?: { country?: string };
-}
-
 interface PurchaseItem {
+    purchaseItemId: number;
     purchaseId: number;
     createdDt: string;
     collectible: {
@@ -21,6 +20,7 @@ interface PurchaseItem {
         imageRef: { url: string };
     };
     userCollectible: {
+        userCollectibleId: number; // Add this ID for linking
         mint: number;
     };
 }
@@ -40,16 +40,23 @@ export default function ProfilePageClient({
     recentCollectibles
 }: ProfilePageClientProps) {
     const { language } = useTranslation();
+    const { setUser } = useUser();
+    const { openModal: openEditProfileModal } = useEditProfileModal();
+    
+    useEffect(() => {
+        if (user) {
+            setUser(user);
+        }
+    }, [user, setUser]);
 
     const displayName = user.username || user.email;
     const displayCountry = user.authData?.country;
 
     const getProfileImageUrl = () => {
-        if (!mostRecentPurchaseItem) {
-            return "/images/ubulion.jpg"; // A fallback image
+        if (!mostRecentPurchaseItem?.collectible?.imageRef?.url || !mostRecentPurchaseItem?.userCollectible?.mint) {
+            return "/images/default-profile.png";
         }
-        const { collectible, userCollectible } = mostRecentPurchaseItem;
-        return `${collectible.imageRef.url}/${userCollectible.mint}.png`;
+        return `${mostRecentPurchaseItem.collectible.imageRef.url}/${mostRecentPurchaseItem.userCollectible.mint}.png`;
     };
 
     const formatDate = (dateString: string) => {
@@ -60,7 +67,7 @@ export default function ProfilePageClient({
     return (
         <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
             {/* --- Profile Header Section --- */}
-            <section className="flex flex-col md:flex-row items-center justify-between gap-12 mb-16">
+            <section className="flex flex-col md:flex-row items-start justify-between gap-12 mb-16">
                 <div className="text-left">
                     <h1 className="text-5xl font-bold text-foreground">{displayName}</h1>
                     {displayCountry && (
@@ -68,23 +75,27 @@ export default function ProfilePageClient({
                     )}
                 </div>
 
-                <div className="flex-shrink-0 justify-items-center">
+                <div className="flex-shrink-0 flex flex-col items-center">
                     <Card className="rounded-full w-48 h-48 p-4 shadow-lg relative overflow-hidden">
-                        <Image
+                        <CollectibleImage
                             src={getProfileImageUrl()}
+                            fallbackSrc="/images/ubuLion.jpg"
                             alt="Profile Collectible"
                             fill
                             style={{ objectFit: 'cover' }}
                             className="rounded-full"
                         />
                     </Card>
-                    <div className="mt-4 text-center p-4 bg-card rounded-lg shadow-md md:justify-items-center">
+                    <div className="mt-4 text-center p-4 bg-card rounded-lg shadow-md w-full">
                         <p className="font-bold text-lg">Owned Collectibles</p>
                         <p className="text-3xl font-bold text-primary">{totalCollectibles}</p>
                         <div className="mt-2 text-sm text-muted-foreground bg-muted p-2 rounded">
                             {user.email}
                         </div>
                     </div>
+                    <Button onClick={openEditProfileModal} className="mt-4 w-full bg-blue-600 hover:bg-blue-700 rounded-full">
+                        Edit Profile
+                    </Button>
                 </div>
             </section>
 
@@ -94,33 +105,45 @@ export default function ProfilePageClient({
                 {recentCollectibles.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                         {recentCollectibles.map((item) => {
+                            if (!item.userCollectible) return null; 
                             const imageUrl = `${item.collectible.imageRef.url}/${item.userCollectible.mint}.png`;
                             const displayName = item.collectible.name[language as 'en' | 'de'] || item.collectible.name.en;
                             return (
-                                <Card key={item.purchaseId} className="w-full flex flex-col overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 ease-in-out shadow-lg hover:shadow-2xl">
-                                    <Link href={`/campaign/${item.collectible.collectibleId}`} className="hover:underline">
-                                        <Image
+                                // The Fix: Wrap the Card in a Link to the specific user collectible detail page
+                                <Link href={`/user_collectible/${item.userCollectible.userCollectibleId}`} key={item.purchaseItemId}>
+                                    <Card className="w-full flex flex-col overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 ease-in-out shadow-lg hover:shadow-2xl">
+                                        <CollectibleImage
                                             src={imageUrl}
+                                            fallbackSrc="/images/ubuLion.jpg"
                                             alt={displayName}
                                             width={500}
                                             height={500}
                                             className="w-full h-56 object-cover"
                                         />
-                                    </Link>
-                                    <div className="bg-primary text-primary-foreground text-center py-2 font-semibold">
-                                        {displayName}
-                                    </div>
-                                    <CardContent className="flex-grow text-center p-4">
-                                        <p className="text-sm text-muted-foreground">
-                                            Purchased On: {formatDate(item.createdDt)}
-                                        </p>
-                                    </CardContent>
-                                </Card>
+                                        <div className="bg-primary text-primary-foreground text-center py-2 font-semibold">
+                                            {displayName}
+                                        </div>
+                                        <CardContent className="flex-grow text-center p-4">
+                                            <p className="text-sm text-muted-foreground">
+                                                Purchased On: {formatDate(item.createdDt)}
+                                            </p>
+                                        </CardContent>
+                                    </Card>
+                                </Link>
                             );
                         })}
                     </div>
                 ) : (
                     <p className="text-muted-foreground">No collectibles purchased yet.</p>
+                )}
+                {totalCollectibles > 4 && (
+                    <div className="text-center mt-12">
+                        <Link href="/collectibles" passHref>
+                            <Button size="lg" className="bg-blue-600 hover:bg-blue-700 rounded-full px-10 py-6 text-lg">
+                                View All Collectibles
+                            </Button>
+                        </Link>
+                    </div>
                 )}
             </section>
         </main>

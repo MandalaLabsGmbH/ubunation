@@ -5,8 +5,8 @@ import { usePurchasesModal } from '@/app/contexts/PurchasesModalContext';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { X, ArrowLeft, Loader2 } from 'lucide-react';
-import Image from 'next/image';
 import { useTranslation } from '@/app/hooks/useTranslation';
+import CollectibleImage from '../../CollectibleImage'; // Import the new component
 
 // --- Types for API Data ---
 type Purchase = {
@@ -25,7 +25,7 @@ type PurchaseDetailItem = {
   itemId: number;
   collectible: {
     name: { en: string; de: string };
-    price?: { base: string }; // Updated type for price
+    price?: { base: string };
     imageRef: { url: string };
   };
   userCollectible: {
@@ -154,11 +154,18 @@ export default function PurchasesModal() {
               {purchaseDetails.map((item) => {
                 const imageUrl = `${item.collectible.imageRef.url}/${item.userCollectible.mint}.png`;
                 const displayName = item.collectible.name[language as 'en' | 'de'] || item.collectible.name.en;
-                // The Fix: Get the price from the collectible's price object.
                 const itemPrice = parseFloat(item.collectible.price?.base || '0');
                 return (
                   <div key={item.purchaseItemId} className="flex items-center gap-4 py-2 border-b last:border-b-0">
-                    <Image src={imageUrl} alt={displayName} width={48} height={48} className="rounded-md bg-background" />
+                    {/* The Fix: Use the CollectibleImage component */}
+                    <CollectibleImage 
+                      src={imageUrl} 
+                      fallbackSrc="/images/ubuLion.jpg"
+                      alt={displayName} 
+                      width={48} 
+                      height={48} 
+                      className="rounded-md bg-background" 
+                    />
                     <div className="flex-grow">
                       <p className="font-semibold">{displayName}</p>
                       <p className="text-xs text-muted-foreground">Mint #{item.userCollectible.mint}</p>

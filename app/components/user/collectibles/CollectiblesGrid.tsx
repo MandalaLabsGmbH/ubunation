@@ -1,8 +1,8 @@
 'use client'
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
+import CollectibleImage from '../../CollectibleImage'; // Import the new component
 
 // --- Type Definition ---
 interface EnrichedUserCollectible {
@@ -32,11 +32,14 @@ export default function CollectiblesGrid({ collectibles }: CollectiblesGridProps
                 const displayName = item.collectible.name.en; // Defaulting to English for now
 
                 return (
-                    <Link href={`/campaign/${item.collectible.collectibleId}`} key={item.userCollectibleId}>
+                    // The Fix: Link to the specific user collectible detail page
+                    <Link href={`/user_collectible/${item.userCollectibleId}`} key={item.userCollectibleId}>
                         <Card className="aspect-square w-full overflow-hidden rounded-lg shadow-md transition-transform hover:scale-105 hover:shadow-xl">
                             <div className="relative w-full h-full">
-                                <Image
+                                {/* The Fix: Use the CollectibleImage component for robust loading */}
+                                <CollectibleImage
                                     src={imageUrl}
+                                    fallbackSrc="/images/ubuLion.jpg"
                                     alt={displayName}
                                     fill
                                     style={{ objectFit: 'cover' }}
