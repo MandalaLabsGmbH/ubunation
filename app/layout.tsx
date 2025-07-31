@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Head from 'next/head';
 import "./globals.css";
 import Footer from "./footer";
@@ -19,8 +19,19 @@ import { EditProfileModalProvider } from "@/app/contexts/EditProfileModalContext
 import EditProfileModal from "@/app/components/user/profile/EditProfileModal"; // Import EditProfileModal
 
 export const metadata: Metadata = {
-  title: "UBUNΛTION",
-  description: "Donate with UBUNΛTION today!",
+  title: "Ubunation",
+  description: "Digital sammeln, real erleben!",
+  // Explicitly define your icons here
+  icons: {
+    icon: '/favicon.ico', // Standard favicon
+    apple: '/apple-icon.png', // For Apple devices
+  },
+};
+
+// It's also good practice to define the viewport for mobile devices
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
