@@ -38,7 +38,7 @@ export default function CampaignTemplate({ collectible }: CampaignTemplateProps)
     addToCart({
       collectibleId: collectible.collectibleId,
       name: displayName,
-      imageUrl: collectible.imageRef?.url || '',
+      imageUrl: collectible.imageRef?.img || '',
       price: itemPrice, // Use the dynamic price
     });
     alert(`${displayName} has been added to your cart!`);
