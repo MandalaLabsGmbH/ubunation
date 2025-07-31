@@ -19,8 +19,8 @@ import { EditProfileModalProvider } from "@/app/contexts/EditProfileModalContext
 import EditProfileModal from "@/app/components/user/profile/EditProfileModal"; // Import EditProfileModal
 
 export const metadata: Metadata = {
-  title: "Ubunation",
-  description: "Digital sammeln, real erleben!",
+  title: "UBUNΛTION",
+  description: "Donate with UBUNΛTION today!",
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
