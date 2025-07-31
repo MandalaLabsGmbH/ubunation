@@ -20,11 +20,11 @@ import EditProfileModal from "@/app/components/user/profile/EditProfileModal"; /
 
 export const metadata: Metadata = {
   title: "Ubunation",
-  description: "Digital sammeln, real erleben!",
+  description: "Donate to Ubunation Today!",
   // Explicitly define your icons here
   icons: {
-    icon: '/favicon.ico', // Standard favicon
-    apple: '/apple-icon.png', // For Apple devices
+    icon: '/app/favicon.ico', // Standard favicon
+    apple: '/app/apple-icon.png', // For Apple devices
   },
 };
 
