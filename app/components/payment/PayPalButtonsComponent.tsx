@@ -9,7 +9,7 @@ const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID!;
 // This inner component is needed to access the script loading state
 function PayPalButtonWrapper() {
     const [{ isPending }] = usePayPalScriptReducer();
-    const { paypalOrderID, setPaymentView, setErrorMessage } = usePayment();
+    const { paypalOrderID, purchaseId, setPaymentView, setErrorMessage, pollPurchaseStatus } = usePayment();
 
     return (
         <>
@@ -28,9 +28,14 @@ function PayPalButtonWrapper() {
                         return Promise.resolve(paypalOrderID!);
                     }}
                     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                    onApprove={(_data, _actions) => {
-                        console.log("PayPal payment approved");
-                        setPaymentView('SUCCESS');
+                     onApprove={() => {
+                        console.log("PayPal payment approved by user. Waiting for backend confirmation...");
+                        if (purchaseId) {
+                            pollPurchaseStatus(purchaseId);
+                        } else {
+                            setErrorMessage("Could not verify purchase status.");
+                            setPaymentView('ERROR');
+                        }
                         return Promise.resolve();
                     }}
                     onError={(err) => {
