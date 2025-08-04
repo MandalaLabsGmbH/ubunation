@@ -61,8 +61,14 @@ export default function PayPalButtonsComponent() {
         return <div>Could not initialize PayPal payment.</div>;
     }
 
+    const scriptOptions = {
+        clientId: PAYPAL_CLIENT_ID,
+        currency: "EUR",
+        "disable-funding": "card,sepa" 
+    };
+
     return (
-        <PayPalScriptProvider options={{ clientId: PAYPAL_CLIENT_ID, currency: "EUR" }}>
+        <PayPalScriptProvider options={scriptOptions}>
             <h2 className="text-2xl font-bold text-center mb-4">Complete Your Purchase</h2>
             <PayPalButtonWrapper />
         </PayPalScriptProvider>
