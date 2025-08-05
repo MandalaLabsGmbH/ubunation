@@ -23,11 +23,11 @@ export default function Header() {
       <nav className="container mx-auto flex justify-between items-center">
         <Link href="/">
           <div className="relative h-10 w-24">
-            <div className="block dark:hidden">
-              <Image src="/images/ubuLogoBlack.png" alt="UBU Logo" fill style={{ objectFit: 'contain' }} priority/>
+            <div className="relative h-10 block dark:hidden">
+              <Image src="/images/ubuLogoBlack.png" alt="UBU Logo" fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" style={{ objectFit: 'contain' }} priority/>
             </div>
-            <div className="hidden dark:block">
-              <Image src="/images/ubuLogoWhite.png" alt="UBU Logo" fill style={{ objectFit: 'contain' }} priority/>
+            <div className="relative h-10 hidden dark:block">
+              <Image src="/images/ubuLogoWhite.png" alt="UBU Logo" fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" style={{ objectFit: 'contain' }} priority/>
             </div>
           </div>
         </Link>
