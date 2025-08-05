@@ -43,6 +43,11 @@ export function PaymentProvider({ children }: { children: ReactNode }) {
 
   const openPayment = () => {
     resetPayment();
+    if (!session) {
+      setPaymentView('GET_EMAIL');
+    } else {
+      setPaymentView('SELECT_METHOD');
+    }
     setIsPaymentOpen(true);
   };
 

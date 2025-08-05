@@ -1,12 +1,14 @@
 'use client'
 
-import { useEffect } from 'react';
+import { useEffect, useState, FormEvent } from 'react';
 import { usePayment } from '@/app/contexts/PaymentContext';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { X, CheckCircle, XCircle } from 'lucide-react';
 import Image from 'next/image';
-import { useCart } from '@/app/contexts/CartContext'; // Import useCart
+import { useCart } from '@/app/contexts/CartContext';
 
 // --- Stripe Elements Imports ---
 import { loadStripe } from '@stripe/stripe-js';
@@ -63,9 +65,10 @@ export default function PaymentModal() {
 
   const renderContent = () => {
     switch (paymentView) {
+      case 'GET_EMAIL':
+        return <GetEmailView />;
       case 'SELECT_METHOD':
         return <SelectMethodView />;
-
       case 'STRIPE_ELEMENTS':
         if (!clientSecret) {
             return <ErrorView message="Could not initialize Stripe payment." onRetry={resetPayment} onClose={handleCloseAndReset} />;
@@ -75,13 +78,11 @@ export default function PaymentModal() {
             <StripePaymentForm />
           </Elements>
         );
-      
       case 'PAYPAL_CHECKOUT':
         if (!paypalOrderID) {
             return <ErrorView message="Could not create PayPal payment session." onRetry={resetPayment} onClose={handleCloseAndReset} />;
         }
         return <PayPalButtonsComponent />;
-
       case 'PROCESSING':
         return (
             <div className="text-center py-12">
@@ -89,7 +90,6 @@ export default function PaymentModal() {
                 <p className="mt-4 text-muted-foreground">Processing your request...</p>
             </div>
         );
-
       case 'SUCCESS':
         return (
             <div className="text-center py-12">
@@ -99,10 +99,8 @@ export default function PaymentModal() {
                 <Button onClick={handleSuccessAndClear}>Done</Button>
             </div>
         );
-
       case 'ERROR':
         return <ErrorView message={errorMessage || 'An unknown error occurred.'} onRetry={resetPayment} onClose={handleCloseAndReset} />;
-
       default:
         return null;
     }
@@ -135,6 +133,38 @@ function SelectMethodView() {
                     <Image src="/images/svg/paypal.svg" alt="PayPal" width={80} height={25} />
                 </Button>
             </div>
+        </div>
+    );
+}
+
+// --- Sub-component for Email Collection ---
+function GetEmailView() {
+    const [email, setEmail] = useState('');
+    const { setPaymentView, setGuestEmail } = usePayment();
+    const handleSubmit = (e: FormEvent) => {
+        e.preventDefault();
+        setGuestEmail(email);
+        setPaymentView('SELECT_METHOD');
+    };
+
+    return (
+        <div>
+            <h2 className="text-2xl font-bold text-center mb-6">Continue as Guest</h2>
+            <p className="text-center text-muted-foreground mb-4">Please enter your email to receive your receipt and collectibles.</p>
+            <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                    <Label htmlFor="guest-email">Email Address</Label>
+                    <Input 
+                        id="guest-email" 
+                        type="email" 
+                        value={email} 
+                        onChange={(e) => setEmail(e.target.value)}
+                        required 
+                        placeholder="you@example.com"
+                    />
+                </div>
+                <Button type="submit" className="w-full">Continue</Button>
+            </form>
         </div>
     );
 }

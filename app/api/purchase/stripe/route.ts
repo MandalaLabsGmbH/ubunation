@@ -5,7 +5,7 @@ const NEXT_PUBLIC_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export async function POST(request: NextRequest) {
     try {
-        const { cart, purchaseId } = await request.json();
+        const { cart, purchaseId, email } = await request.json();
 
         if (!cart || cart.length === 0) {
             return NextResponse.json({ message: 'Shopping cart is empty.' }, { status: 400 });
@@ -20,7 +20,8 @@ export async function POST(request: NextRequest) {
 
         const payload = { 
             cart: cart,
-            purchaseId: purchaseId 
+            purchaseId: purchaseId ,
+            email: email
         };
 
         const stripeLambdaUrl = `${NEXT_PUBLIC_API_BASE_URL}/PurchaseProcess/create_stripe_payment_intent`;
