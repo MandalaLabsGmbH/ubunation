@@ -3,9 +3,10 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
 import { useCart } from './CartContext';
 import { useTranslation } from '@/app/hooks/useTranslation';
+import { useSession } from 'next-auth/react';
 
 // PAYPAL_CHECKOUT will now render the JS SDK buttons, not an iframe
-export type PaymentView = 'SELECT_METHOD' | 'STRIPE_ELEMENTS' | 'PAYPAL_CHECKOUT' | 'PROCESSING' | 'SUCCESS' | 'ERROR';
+export type PaymentView = 'GET_EMAIL' | 'SELECT_METHOD' | 'STRIPE_ELEMENTS' | 'PAYPAL_CHECKOUT' | 'PROCESSING' | 'SUCCESS' | 'ERROR';
 
 interface PaymentContextType {
   isPaymentOpen: boolean;
@@ -13,8 +14,10 @@ interface PaymentContextType {
   clientSecret: string | null;
   paypalOrderID: string | null;
   purchaseId: number | null;
+  guestEmail: string;
   errorMessage: string | null;
   openPayment: () => void;
+  setGuestEmail: (email: string) => void;
   startStripePayment: () => Promise<void>;
   startPaypalPayment: () => Promise<void>;
   pollPurchaseStatus: (id: number) => void;
@@ -32,29 +35,42 @@ export function PaymentProvider({ children }: { children: ReactNode }) {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [paypalOrderID, setPaypalOrderID] = useState<string | null>(null);
   const [purchaseId, setPurchaseId] = useState<number | null>(null);
+  const [guestEmail, setGuestEmail] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { cartItems } = useCart();
   const { language } = useTranslation();
+  const { data: session } = useSession();
 
   const openPayment = () => {
     resetPayment();
     setIsPaymentOpen(true);
   };
 
-  const pollPurchaseStatus = (id: number) => {
+   const pollPurchaseStatus = (id: number) => {
     setPaymentView('PROCESSING');
     let attempts = 0;
     const interval = setInterval(async () => {
       attempts++;
-      if (attempts > 30) { // Timeout after 30 seconds
+      // The Fix: When the polling times out...
+      if (attempts > 15) { // Timeout after 30 seconds
         clearInterval(interval);
-        setErrorMessage("Your payment is being processed. You will receive an email confirmation shortly.");
+        try {
+            await fetch('/api/purchase/cancel', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ purchaseId: id }),
+            });
+            console.log(`Cancellation request sent for purchase ${id}`);
+        } catch (cancelError) {
+            console.error("Failed to send cancellation request:", cancelError);
+        }
+
+        setErrorMessage("Your payment took too long to confirm and has been cancelled. You have not been charged.");
         setPaymentView('ERROR');
         return;
       }
       try {
-        // The Fix: Update the fetch URL to the new route
-        const response = await fetch(`/api/purchase/paypal/purchaseStatus?purchaseId=${id}`);
+        const response = await fetch(`/api/paypal/purchaseStatus?purchaseId=${id}`);
         if (response.ok) {
           const { status } = await response.json();
           if (status === 'COMPLETE') {
@@ -90,7 +106,11 @@ export function PaymentProvider({ children }: { children: ReactNode }) {
       const response = await fetch('/api/purchase/stripe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cart: cartItems, purchaseId: createdPurchase.purchaseId }),
+        body: JSON.stringify({ 
+          cart: cartItems, 
+          purchaseId: createdPurchase.purchaseId, 
+          email: session ? undefined : guestEmail 
+        }),
       });
       if (!response.ok) throw new Error((await response.json()).message);
       const { clientSecret } = await response.json();
@@ -124,7 +144,11 @@ export function PaymentProvider({ children }: { children: ReactNode }) {
         const response = await fetch('/api/purchase/paypal', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ cart: cartItems, purchaseId: createdPurchase.purchaseId }),
+            body: JSON.stringify({ 
+              cart: cartItems, 
+              purchaseId: createdPurchase.purchaseId, 
+              email: session ? undefined : guestEmail 
+            }),
         });
         if (!response.ok) throw new Error((await response.json()).message);
         
@@ -148,12 +172,13 @@ export function PaymentProvider({ children }: { children: ReactNode }) {
       setClientSecret(null);
       setPaypalOrderID(null); 
       setPurchaseId(null);
+      setGuestEmail('');
       setErrorMessage(null);
   }
 
   const value = { 
-    isPaymentOpen, paymentView, clientSecret, paypalOrderID, purchaseId, errorMessage,
-    openPayment, startStripePayment, startPaypalPayment, pollPurchaseStatus,
+    isPaymentOpen, paymentView, clientSecret, paypalOrderID, purchaseId, guestEmail, errorMessage,
+    openPayment, setGuestEmail, startStripePayment, startPaypalPayment, pollPurchaseStatus,
     setPaymentView, setErrorMessage, closePayment, resetPayment
   };
 
