@@ -9,6 +9,8 @@ import { Label } from '@/components/ui/label';
 import { X, CheckCircle, XCircle } from 'lucide-react';
 import Image from 'next/image';
 import { useCart } from '@/app/contexts/CartContext';
+import { useSession } from 'next-auth/react';
+import Cookies from 'js-cookie';
 
 // --- Stripe Elements Imports ---
 import { loadStripe } from '@stripe/stripe-js';
@@ -28,11 +30,13 @@ export default function PaymentModal() {
     clientSecret,
     paypalOrderID,
     errorMessage,
+    guestEmail,
     setPaymentView,
     setErrorMessage
   } = usePayment();
   
   const { clearCart } = useCart();
+  const { data: session } = useSession();
 
   useEffect(() => {
     if (!isPaymentOpen) return;
@@ -74,9 +78,11 @@ export default function PaymentModal() {
             return <ErrorView message="Could not initialize Stripe payment." onRetry={resetPayment} onClose={handleCloseAndReset} />;
         }
         return (
-          <Elements stripe={stripePromise} options={{ clientSecret }}>
-            <StripePaymentForm />
-          </Elements>
+          <div className="max-h-[70vh] overflow-y-auto pr-2">
+            <Elements stripe={stripePromise} options={{ clientSecret }}>
+              <StripePaymentForm />
+            </Elements>
+          </div>
         );
       case 'PAYPAL_CHECKOUT':
         if (!paypalOrderID) {
@@ -95,8 +101,22 @@ export default function PaymentModal() {
             <div className="text-center py-12">
                 <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
                 <h2 className="text-2xl font-bold mb-2">Payment Successful!</h2>
-                <p className="text-muted-foreground mb-6">Your collectibles have been added to your account. Check your email for a receipt.</p>
-                <Button onClick={handleSuccessAndClear}>Done</Button>
+                
+                {!session ? (
+                    <>
+                        <p className="text-muted-foreground mb-4">
+                            Your purchases have been connected to the email address <span className="font-semibold text-foreground">{guestEmail}</span>.
+                        </p>
+                        <p className="text-muted-foreground mb-6">Please click the button below to create an account and see your collectibles!</p>
+                        <Button onClick={() => { /* Logic to open sign-up modal will go here */ alert('Create account functionality coming soon!'); }} className="mb-4">Create Account</Button>
+                        <Button variant="ghost" onClick={handleSuccessAndClear}>Continue as Guest</Button>
+                    </>
+                ) : (
+                    <>
+                        <p className="text-muted-foreground mb-6">Your collectibles have been added to your account. Check your email for a receipt.</p>
+                        <Button onClick={handleSuccessAndClear}>Done</Button>
+                    </>
+                )}
             </div>
         );
       case 'ERROR':
@@ -141,6 +161,14 @@ function SelectMethodView() {
 function GetEmailView() {
     const [email, setEmail] = useState('');
     const { setPaymentView, setGuestEmail } = usePayment();
+
+    useEffect(() => {
+        const savedEmail = Cookies.get('guest-email');
+        if (savedEmail) {
+            setEmail(savedEmail);
+        }
+    }, []);
+
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
         setGuestEmail(email);
