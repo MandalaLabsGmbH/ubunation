@@ -11,6 +11,7 @@ import Image from 'next/image';
 import { useCart } from '@/app/contexts/CartContext';
 import { useSession } from 'next-auth/react';
 import Cookies from 'js-cookie';
+import { useRouter } from 'next/navigation';
 
 // --- Stripe Elements Imports ---
 import { loadStripe } from '@stripe/stripe-js';
@@ -37,6 +38,7 @@ export default function PaymentModal() {
   
   const { clearCart } = useCart();
   const { data: session } = useSession();
+  const router = useRouter();
 
   useEffect(() => {
     if (!isPaymentOpen) return;
@@ -64,7 +66,17 @@ export default function PaymentModal() {
 
   const handleSuccessAndClear = () => {
     clearCart();
-    handleCloseAndReset();
+    closePayment();
+    setTimeout(() => {
+        resetPayment();
+        if (session) {
+            // If logged in, redirect to the collectibles page.
+            router.push(`/collectibles`);
+        } else {
+            // If a guest, redirect to the home page.
+            router.push('/');
+        }
+    }, 300);
   }
 
   const renderContent = () => {
