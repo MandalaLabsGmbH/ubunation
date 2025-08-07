@@ -43,38 +43,49 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [translations, setTranslations] = useState<Translations>(localEnTranslations);
   const [isLoading, setIsLoading] = useState(false); // Set initial loading to false
 
-  useEffect(() => {
-    const savedLanguage = Cookies.get('app-language') as Language | undefined;
-    const initialLang = (savedLanguage && ['en', 'de'].includes(savedLanguage)) ? savedLanguage : 'en';
-    setLanguageState(initialLang);
+   useEffect(() => {
+    // Check for a language parameter in the URL first.
+    const searchParams = new URLSearchParams(window.location.search);
+    const langFromUrl = searchParams.get('language') as Language | null;
 
-    // Fetch translations for the initial language
-    fetchTranslations(initialLang);
-  }, []);
-
-  const fetchTranslations = useCallback(async (lang: Language) => {
-    setIsLoading(true);
-    const url = lang === 'de' ? DE_JSON_URL : EN_JSON_URL;
-    try {
-      const response = await fetch(url, { cache: 'no-store' });
-      if (!response.ok) {
-        throw new Error(`Failed to fetch translations from ${url}. Status: ${response.status}`);
-      }
-      const data = await response.json();
-      setTranslations(data);
-    } catch (error) {
-      console.error("Translation loading error:", error);
-      // If the fetch fails, ensure the translations fall back to the local English version.
-      setTranslations(localEnTranslations);
-    } finally {
-      setIsLoading(false);
+    if (langFromUrl && ['en', 'de'].includes(langFromUrl)) {
+      // If a valid language is found in the URL, set it and stop.
+      setLanguage(langFromUrl);
+      return;
     }
-  }, []);
+
+    // If no URL parameter is found, fall back to the cookie.
+    const savedLanguage = Cookies.get('app-language') as Language | undefined;
+    if (savedLanguage && ['en', 'de'].includes(savedLanguage)) {
+      setLanguageState(savedLanguage);
+    }
+  }, []); // Empty dependency array ensures this runs only once on mount.
+
+  useEffect(() => {
+    const fetchTranslations = async () => {
+      setIsLoading(true);
+      const url = language === 'de' ? DE_JSON_URL : EN_JSON_URL;
+      try {
+        const response = await fetch(url, { cache: 'no-store' });
+        if (!response.ok) {
+          throw new Error(`Failed to fetch translations from ${url}. Status: ${response.status}`);
+        }
+        const data = await response.json();
+        setTranslations(data);
+      } catch (error) {
+        console.error("Translation loading error:", error);
+        setTranslations(localEnTranslations);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTranslations();
+  }, [language]);
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
     Cookies.set('app-language', lang, { expires: 365 });
-    fetchTranslations(lang); // Fetch new translations when language changes
   };
 
   const translate = useCallback((key: string): string => {
@@ -89,8 +100,6 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     isLoading,
   };
 
-  // The provider now renders its children immediately, using the fallback
-  // translations until a remote fetch completes. This prevents the page from hanging.
   return (
     <LanguageContext.Provider value={value}>
       {children}
