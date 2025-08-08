@@ -1,6 +1,7 @@
 'use client'
 
 import { createContext, useContext, useState, ReactNode } from 'react';
+import { getAmplifyToken } from '@/app/_helpers/apiHelpers';
 import { useCart } from './CartContext';
 import { useTranslation } from '@/app/hooks/useTranslation';
 import { useSession } from 'next-auth/react';
@@ -41,6 +42,27 @@ export function PaymentProvider({ children }: { children: ReactNode }) {
   const { language } = useTranslation();
   const { data: session } = useSession();
 
+  const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
+  const token = await getAmplifyToken();
+  if (!token) {
+    throw new Error('User is not authenticated');
+  }
+  
+  const headers = new Headers(options.headers);
+  headers.append('Authorization', `Bearer ${token}`);
+  
+  const response = await fetch(url, {
+    ...options,
+    headers,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'API call failed');
+  }
+  return response.json();
+};
+
   const openPayment = () => {
     resetPayment();
     if (!session) {
@@ -56,11 +78,11 @@ export function PaymentProvider({ children }: { children: ReactNode }) {
     let attempts = 0;
     const interval = setInterval(async () => {
       attempts++;
-      // The Fix: When the polling times out...
-      if (attempts > 15) { // Timeout after 30 seconds
+      if (attempts > 15) {
         clearInterval(interval);
         try {
-            await fetch('/api/purchase/cancel', {
+            // 3. Use the new fetchWithAuth function
+            await fetchWithAuth('/api/purchase/cancel', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ purchaseId: id }),
@@ -69,28 +91,25 @@ export function PaymentProvider({ children }: { children: ReactNode }) {
         } catch (cancelError) {
             console.error("Failed to send cancellation request:", cancelError);
         }
-
-        setErrorMessage("Your payment took too long to confirm and has been cancelled. You have not been charged.");
+        setErrorMessage("Your payment took too long to confirm and has been cancelled.");
         setPaymentView('ERROR');
         return;
       }
       try {
-        const response = await fetch(`/api/paypal/purchaseStatus?purchaseId=${id}`);
-        if (response.ok) {
-          const { status } = await response.json();
-          if (status === 'COMPLETE') {
-            clearInterval(interval);
-            setPaymentView('SUCCESS');
-          } else if (['DECLINED', 'CANCELLED', 'ERROR'].includes(status)) {
-            clearInterval(interval);
-            setErrorMessage("Your payment could not be completed.");
-            setPaymentView('ERROR');
-          }
+        // 3. Use the new fetchWithAuth function
+        const { status } = await fetchWithAuth(`/api/paypal/purchaseStatus?purchaseId=${id}`);
+        if (status === 'COMPLETE') {
+          clearInterval(interval);
+          setPaymentView('SUCCESS');
+        } else if (['DECLINED', 'CANCELLED', 'ERROR'].includes(status)) {
+          clearInterval(interval);
+          setErrorMessage("Your payment could not be completed.");
+          setPaymentView('ERROR');
         }
       } catch (error) {
         console.error("Polling error:", error);
       }
-    }, 2000); // Check every 2 seconds
+    }, 2000);
   };
 
   const startStripePayment = async () => {

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, FormEvent } from 'react';
+import { getAmplifyToken } from '@/app/_helpers/apiHelpers';
 import { useEditProfileModal } from '@/app/contexts/EditProfileModalContext';
 import { useUser } from '@/app/contexts/UserContext';
 import { Card } from '@/components/ui/card';
@@ -69,9 +70,15 @@ export default function EditProfileModal() {
         };
 
         try {
+            const token = await getAmplifyToken();
+            if (!token) throw new Error("Authentication session not found.");
+
             const response = await fetch('/api/db/user', {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}` 
+                },
                 body: JSON.stringify(payload),
             });
 

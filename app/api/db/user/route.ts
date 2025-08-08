@@ -8,7 +8,7 @@ const NEXT_PUBLIC_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 export async function GET(request: NextRequest) {
     try {
         const token = await getToken({ req: request, secret: process.env.AUTH_SECRET });
-        if (!token?.accessToken || !token.email) {
+        if (!token?.idToken || !token.email) {
             return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
         }
         
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
         
         const userResponse = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/User/getUserByEmail`, {
             params: { email },
-            headers: { 'Authorization': `Bearer ${token.accessToken}` }
+            headers: { 'Authorization': `Bearer ${token.idToken}` }
         });
 
         return NextResponse.json(userResponse.data);
@@ -42,14 +42,14 @@ export async function GET(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
     try {
         const token = await getToken({ req: request, secret: process.env.AUTH_SECRET });
-        if (!token?.accessToken || !token.email) {
+        if (!token?.idToken || !token.email) {
             return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
         }
 
         // Step 1: Get the user's internal database ID.
         const userResponse = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/User/getUserByEmail`, {
             params: { email: token.email },
-            headers: { 'Authorization': `Bearer ${token.accessToken}` }
+            headers: { 'Authorization': `Bearer ${token.idToken}` }
         });
         const userId = userResponse.data.userId;
 
@@ -69,7 +69,7 @@ export async function PATCH(request: NextRequest) {
                 authData 
             }, 
             {
-                headers: { 'Authorization': `Bearer ${token.accessToken}` }
+                headers: { 'Authorization': `Bearer ${token.idToken}` }
             }
         );
 

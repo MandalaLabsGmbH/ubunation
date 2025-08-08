@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     try {
         const token = await getToken({ req: request, secret: process.env.AUTH_SECRET });
         // A user must be logged in to cancel their own purchase.
-        if (!token?.accessToken) {
+        if (!token?.idToken) {
             return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
         }
 
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
         const response = await axios.post(`${API_BASE_URL}/PurchaseProcess/cancelOrRefundPurchase`, 
             { purchaseId }, 
             {
-                headers: { 'Authorization': `Bearer ${token.accessToken}` }
+                headers: { 'Authorization': `Bearer ${token.idToken}` }
             }
         );
 

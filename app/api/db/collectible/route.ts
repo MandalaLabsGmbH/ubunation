@@ -14,13 +14,13 @@ export async function GET(request: NextRequest) {
 
         // Case 1: Fetch all collectibles for the logged-in user
         if (getMyCollectibles === 'true') {
-            if (!token?.accessToken || !token.email) {
+            if (!token?.idToken || !token.email) {
                 return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
             }
 
             const userResponse = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/User/getUserByEmail`, {
                 params: { email: token.email },
-                headers: { 'Authorization': `Bearer ${token.accessToken}` }
+                headers: { 'Authorization': `Bearer ${token.idToken}` }
             });
             const userId = userResponse.data.userId;
 
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
 
             const userCollectiblesResponse = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/UserCollectible/getUserCollectiblesByOwnerId`, {
                 params: { ownerId: userId },
-                headers: { 'Authorization': `Bearer ${token.accessToken}` }
+                headers: { 'Authorization': `Bearer ${token.idToken}` }
             });
             const userCollectibles = userCollectiblesResponse.data;
 
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
                     try {
                         const collectibleResponse = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/Collectible/getCollectibleByCollectibleId`, {
                             params: { collectibleId: userCollectible.collectibleId },
-                            headers: { 'Authorization': `Bearer ${token.accessToken}` }
+                            headers: { 'Authorization': `Bearer ${token.idToken}` }
                         });
                         return { ...userCollectible, collectible: collectibleResponse.data };
                     } catch (enrichError) {

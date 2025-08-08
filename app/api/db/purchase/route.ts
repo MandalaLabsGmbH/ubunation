@@ -14,7 +14,7 @@ type CartItem = {
 export async function GET(request: NextRequest) {
     try {
         const token = await getToken({ req: request, secret: process.env.AUTH_SECRET });
-        if (!token?.accessToken || !token.email) {
+        if (!token?.idToken || !token.email) {
             return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
         }
 
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
         const userResponse = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/User/getUserByEmail`, {
             params: { email: token.email },
             headers: {
-                'Authorization': `Bearer ${token.accessToken}`
+                'Authorization': `Bearer ${token.idToken}`
             }
         });
 
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
                 userId: userId,
             },
             headers: {
-                'Authorization': `Bearer ${token.accessToken}`
+                'Authorization': `Bearer ${token.idToken}`
             }
         });
 
@@ -94,10 +94,10 @@ export async function POST(request: NextRequest) {
         const token = await getToken({ req: request, secret: process.env.AUTH_SECRET });
         let userId: number = 1; // Default to guest user ID
 
-        if (token && token.email && token.accessToken) {
+        if (token && token.email && token.idToken) {
             try {
                 const userResponse = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/User/getUserByEmail?email=${token.email}`, {
-                    headers: { 'Authorization': `Bearer ${token.accessToken}` }
+                    headers: { 'Authorization': `Bearer ${token.idToken}` }
                 });
                 if (userResponse.data && userResponse.data.userId) {
                     userId = userResponse.data.userId;

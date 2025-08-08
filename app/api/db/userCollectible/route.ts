@@ -7,7 +7,7 @@ const NEXT_PUBLIC_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 export async function GET(request: NextRequest) {
     try {
         const token = await getToken({ req: request, secret: process.env.AUTH_SECRET });
-        if (!token?.accessToken) {
+        if (!token?.idToken) {
             return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
         }
 
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
             // This is the call made by the purchases modal.
             const response = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/UserCollectible/getUserCollectibleByUserCollectibleId`, {
                 params: { userCollectibleId: parseInt(userCollectibleId) },
-                headers: { 'Authorization': `Bearer ${token.accessToken}` }
+                headers: { 'Authorization': `Bearer ${token.idToken}` }
             });
             return NextResponse.json(response.data);
         }
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
         // This is the original logic, which can be kept as a fallback for other use cases.
         const userResponse = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/User/getUserByEmail`, {
             params: { email: token.email },
-            headers: { 'Authorization': `Bearer ${token.accessToken}` }
+            headers: { 'Authorization': `Bearer ${token.idToken}` }
         });
         const userId = userResponse.data.userId;
 
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
         
         const userCollectibleResponse = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/UserCollectible/getUserCollectiblesByOwnerId`, {
             params: { ownerId: userId },
-            headers: { 'Authorization': `Bearer ${token.accessToken}` }
+            headers: { 'Authorization': `Bearer ${token.idToken}` }
         });
 
         // This original response seems specific, so we'll return the full data for flexibility.
@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     try {
         const token = await getToken({ req: request, secret: process.env.AUTH_SECRET });
-        if (!token?.accessToken) {
+        if (!token?.idToken) {
             return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
         }
 
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
             "collectibleId": collectibleId,
             "mint": mint
         }, {
-            headers: { 'Authorization': `Bearer ${token.accessToken}` }
+            headers: { 'Authorization': `Bearer ${token.idToken}` }
         });
 
         return NextResponse.json({ message: 'success' });

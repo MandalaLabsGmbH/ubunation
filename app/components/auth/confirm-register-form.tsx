@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2 } from "lucide-react";
-import { cognitoConfirm } from '@/app/_helpers/registerHelpers';
+import { cognitoConfirm } from '@/app/_helpers/registerHelper';
 
 interface ConfirmRegisterFormProps {
     email: string;

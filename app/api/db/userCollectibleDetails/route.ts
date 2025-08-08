@@ -8,7 +8,7 @@ const NEXT_PUBLIC_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 export async function GET(request: NextRequest) {
     try {
         const token = await getToken({ req: request, secret: process.env.AUTH_SECRET });
-        if (!token?.accessToken) {
+        if (!token?.idToken) {
             return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
         }
 
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
         // 1. Fetch the core UserCollectible object
         const userCollectibleResponse = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/UserCollectible/getUserCollectibleByUserCollectibleId`, {
             params: { userCollectibleId },
-            headers: { 'Authorization': `Bearer ${token.accessToken}` }
+            headers: { 'Authorization': `Bearer ${token.idToken}` }
         });
         const userCollectible = Array.isArray(userCollectibleResponse.data) ? userCollectibleResponse.data[0] : userCollectibleResponse.data;
         if (!userCollectible) {
@@ -33,11 +33,11 @@ export async function GET(request: NextRequest) {
         const [collectibleResponse, ownerResponse] = await Promise.all([
             axios.get(`${NEXT_PUBLIC_API_BASE_URL}/Collectible/getCollectibleByCollectibleId`, {
                 params: { collectibleId: userCollectible.collectibleId },
-                headers: { 'Authorization': `Bearer ${token.accessToken}` }
+                headers: { 'Authorization': `Bearer ${token.idToken}` }
             }),
             axios.get(`${NEXT_PUBLIC_API_BASE_URL}/User/getUserByUserId`, {
                 params: { userId: userCollectible.ownerId },
-                headers: { 'Authorization': `Bearer ${token.accessToken}` }
+                headers: { 'Authorization': `Bearer ${token.idToken}` }
             })
         ]);
 

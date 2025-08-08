@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2 } from 'lucide-react';
 import { AuthError } from '@/app/_helpers/authErrors';
-import { AuthMode } from '@/app/features/auth/hooks/useAuthForm';
+import { AuthMode } from '../hooks/useAuthForm';
 
 interface RegisterFormProps {
     onSubmit: (e: FormEvent<HTMLFormElement>) => void;
@@ -28,35 +28,35 @@ export default function RegisterForm({ onSubmit, loading, error, setMode, resetF
                         <Input id='email' name='email' type='email' autoComplete='email' placeholder='m@example.com' required />
                     </div>
                     <div className='grid gap-2'>
-                        <Label htmlFor='password'>Password</Label>
+                        <Label htmlFor='password'>Passwort</Label>
                         <Input id='password' name='password' type='password' required />
                     </div>
                     <div className='grid gap-2'>
-                        <Label htmlFor='confirmPassword'>Confirm Password</Label>
+                        <Label htmlFor='confirmPassword'>Passwort bestätigen</Label>
                         <Input id='confirmPassword' name='confirmPassword' type='password' required />
                     </div>
                     <div className='grid gap-2'>
                         <div className="flex items-center space-x-2">
                             <Checkbox defaultChecked id="nlBox" name="nlBox" />
                             <label className="text-sm font-medium leading-none" htmlFor="nlBox">
-                                I want to subscribe to the Newsletter
+                                Ich möchte den Kloppocar-Newsletter abonnieren
                             </label>
                         </div>
                     </div>
                     {loading ? (
                         <Button disabled className="w-full">
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Please wait
+                            Bitte warten
                         </Button>
                     ) : (
-                        <Button type="submit" className="w-full">Register</Button>
+                        <Button type="submit" className="w-full">Jetzt anmelden</Button>
                     )}
                     {!!error && <p className="text-red-600 text-sm text-center">{error}</p>}
                 </div>
                 <div className='mt-4 text-center text-sm'>
-                    Already have an account?{' '}
+                    Sie haben bereits ein Konto?{' '}
                     <Button variant="link" type="button" onClick={() => { resetForm(); setMode('login-email'); }}>
-                        Click here
+                        Klicken Sie hier
                     </Button>
                 </div>
             </CardContent>

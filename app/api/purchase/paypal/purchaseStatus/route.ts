@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     try {
         const token = await getToken({ req: request, secret: process.env.AUTH_SECRET });
         // This endpoint is only for logged-in users to check their own purchases.
-        if (!token?.accessToken) {
+        if (!token?.idToken) {
             return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
         }
 
@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
         const response = await axios.get(`${API_BASE_URL}/Purchase/getPurchaseByPurchaseId`, {
             params: { purchaseId: parseInt(purchaseId) },
             headers: {
-                'Authorization': `Bearer ${token.accessToken}`
+                'Authorization': `Bearer ${token.idToken}`
             }
         });
 

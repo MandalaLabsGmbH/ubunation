@@ -7,7 +7,7 @@ const NEXT_PUBLIC_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 export async function GET(request: NextRequest) {
     try {
         const token = await getToken({ req: request, secret: process.env.AUTH_SECRET });
-        if (!token?.accessToken) {
+        if (!token?.idToken) {
             return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
         }
 
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
         if (purchaseId) {
             const itemsResponse = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/PurchaseItem/getPurchaseItemsByPurchaseId`, {
                 params: { purchaseId: parseInt(purchaseId) },
-                headers: { 'Authorization': `Bearer ${token.accessToken}` }
+                headers: { 'Authorization': `Bearer ${token.idToken}` }
             });
             purchaseItems = itemsResponse.data;
         } 
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
         else if (token.email) {
             const userResponse = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/User/getUserByEmail`, {
                 params: { email: token.email },
-                headers: { 'Authorization': `Bearer ${token.accessToken}` }
+                headers: { 'Authorization': `Bearer ${token.idToken}` }
             });
             const userId = userResponse.data.userId;
 
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
 
             const purchasesResponse = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/Purchase/getPurchasesByUserId`, {
                 params: { userId: userId },
-                headers: { 'Authorization': `Bearer ${token.accessToken}` }
+                headers: { 'Authorization': `Bearer ${token.idToken}` }
             });
             const userPurchases = purchasesResponse.data;
 
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
             const itemPromises = userPurchases.map((purchase: any) => 
                 axios.get(`${NEXT_PUBLIC_API_BASE_URL}/PurchaseItem/getPurchaseItemsByPurchaseId`, {
                     params: { purchaseId: purchase.purchaseId },
-                    headers: { 'Authorization': `Bearer ${token.accessToken}` }
+                    headers: { 'Authorization': `Bearer ${token.idToken}` }
                 }).then(res => res.data)
             );
             
@@ -64,14 +64,14 @@ export async function GET(request: NextRequest) {
                 try {
                     const collectibleResponse = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/Collectible/getCollectibleByCollectibleId`, {
                         params: { collectibleId: item.itemId },
-                        headers: { 'Authorization': `Bearer ${token.accessToken}` }
+                        headers: { 'Authorization': `Bearer ${token.idToken}` }
                     });
 
                     let userCollectibleData = null;
                     if (item.purchasedUserItemId) {
                         const userCollectibleResponse = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/UserCollectible/getUserCollectibleByUserCollectibleId`, {
                             params: { userCollectibleId: item.purchasedUserItemId },
-                            headers: { 'Authorization': `Bearer ${token.accessToken}` }
+                            headers: { 'Authorization': `Bearer ${token.idToken}` }
                         });
                         userCollectibleData = Array.isArray(userCollectibleResponse.data) ? userCollectibleResponse.data[0] : userCollectibleResponse.data;
                     }
