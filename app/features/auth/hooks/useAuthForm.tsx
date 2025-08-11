@@ -1,6 +1,9 @@
 import { FormEvent, useState } from 'react';
 import { signIn as nextAuthSignIn } from 'next-auth/react';
-import { signOut as amplifySignOut } from 'aws-amplify/auth';
+import { 
+    signIn as amplifySignIn, 
+    signOut as amplifySignOut 
+} from 'aws-amplify/auth';
 import { 
     cognitoRegister, 
     cognitoConfirm, 
@@ -98,6 +101,11 @@ export function useAuthForm(onSuccess: () => void) {
         const formPassword = formData.get('password') as string;
 
         try {
+            await amplifySignIn({ 
+                username: formEmail, 
+                password: formPassword 
+            });
+
             const result = await nextAuthSignIn('credentials', {
                 username: formEmail,
                 password: formPassword,
@@ -172,6 +180,8 @@ export function useAuthForm(onSuccess: () => void) {
                 await cognitoConfirm(email, confirmationCode);
                 setIsModalOpen(false);
                 setLoading(true);
+
+                await amplifySignIn({ username: email, password: password });
 
                 const loginResponse = await nextAuthSignIn("credentials", {
                     username: email,

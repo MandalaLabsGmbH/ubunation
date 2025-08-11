@@ -60,13 +60,16 @@ export default function EditProfileModal() {
         setStatus('loading');
         setErrorMessage('');
 
+        const newAuthData = {
+            ...(user?.authData || {}), // Start with existing data or an empty object
+            fullName: formState.fullName,
+            country: formState.country,
+            newsletter: formState.newsletter ? '1' : '0',
+        };
+
         const payload = {
             username: formState.username,
-            authData: {
-                name: formState.fullName,
-                country: formState.country,
-                newsletter: formState.newsletter ? '1' : '0',
-            }
+            authData: newAuthData
         };
 
         try {
@@ -122,8 +125,8 @@ export default function EditProfileModal() {
         return (
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
-                    <Label htmlFor="name">Name</Label>
-                    <Input id="name" name="name" value={formState.fullName} onChange={handleChange} placeholder="e.g. John Doe" />
+                    <Label htmlFor="fullName">Full Name</Label>
+                    <Input id="fullName" name="fullName" value={formState.fullName} onChange={handleChange} placeholder="e.g. John Doe" />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="username">Username</Label>
