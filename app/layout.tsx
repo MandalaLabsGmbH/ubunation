@@ -15,8 +15,9 @@ import { LanguageProvider } from "@/app/contexts/LanguageContext";
 import { PurchasesModalProvider } from "@/app/contexts/PurchasesModalContext";
 import PurchasesModal from "@/app/components/user/purchases/PurchasesModal";
 import { UserProvider } from "@/app/contexts/UserContext"; // Import UserProvider
-import { EditProfileModalProvider } from "@/app/contexts/EditProfileModalContext"; // Import EditProfileModalProvider
-import EditProfileModal from "@/app/components/user/profile/EditProfileModal"; // Import EditProfileModal
+import { EditProfileModalProvider } from "@/app/contexts/EditProfileModalContext";
+import EditProfileModal from "@/app/components/user/profile/EditProfileModal";
+import OnboardingModal from "@/app/components/user/onboarding/OnboardingModal";
 
 export const metadata: Metadata = {
   title: "Ubunation",
@@ -60,7 +61,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                             <CartModal />
                             <PaymentModal />
                             <PurchasesModal />
-                            <EditProfileModal /> {/* Add EditProfileModal */}
+                            <EditProfileModal />
+                            <OnboardingModal />
                           </div>
                         </PaymentProvider>
                       </EditProfileModalProvider>

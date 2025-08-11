@@ -13,7 +13,7 @@ import { X, Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation'; // Import the router
 
 type FormState = {
-    name: string;
+    fullName: string;
     username: string;
     country: string;
     newsletter: boolean;
@@ -27,7 +27,7 @@ export default function EditProfileModal() {
     const router = useRouter(); // Initialize the router
 
     const [formState, setFormState] = useState<FormState>({
-        name: '',
+        fullName: '',
         username: '',
         country: '',
         newsletter: false,
@@ -38,7 +38,7 @@ export default function EditProfileModal() {
     useEffect(() => {
         if (user) {
             setFormState({
-                name: user.authData?.name || '',
+                fullName: user.authData?.fullName || '',
                 username: user.username || '',
                 country: user.authData?.country || '',
                 newsletter: user.authData?.newsletter === '1',
@@ -63,7 +63,7 @@ export default function EditProfileModal() {
         const payload = {
             username: formState.username,
             authData: {
-                name: formState.name,
+                name: formState.fullName,
                 country: formState.country,
                 newsletter: formState.newsletter ? '1' : '0',
             }
@@ -123,7 +123,7 @@ export default function EditProfileModal() {
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
                     <Label htmlFor="name">Name</Label>
-                    <Input id="name" name="name" value={formState.name} onChange={handleChange} placeholder="e.g. John Doe" />
+                    <Input id="name" name="name" value={formState.fullName} onChange={handleChange} placeholder="e.g. John Doe" />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="username">Username</Label>

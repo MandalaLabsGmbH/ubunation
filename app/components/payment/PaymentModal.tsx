@@ -12,6 +12,8 @@ import { useCart } from '@/app/contexts/CartContext';
 import { useSession } from 'next-auth/react';
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
+import { useAuthModal } from '@/app/contexts/AuthModalContext';
+import { cognitoInitiateEmailLogin } from '@/app/_helpers/registerHelper';
 
 // --- Stripe Elements Imports ---
 import { loadStripe } from '@stripe/stripe-js';
@@ -39,6 +41,7 @@ export default function PaymentModal() {
   const { clearCart } = useCart();
   const { data: session } = useSession();
   const router = useRouter();
+  const { openModal: openAuthModal } = useAuthModal();
 
   useEffect(() => {
     if (!isPaymentOpen) return;
@@ -64,18 +67,39 @@ export default function PaymentModal() {
       setTimeout(resetPayment, 300);
   }
 
-  const handleSuccessAndClear = () => {
+  const handleCreateAccountAndLogin = async () => {
+    if (guestEmail) {
+        try {
+            await cognitoInitiateEmailLogin(guestEmail);
+            clearCart();
+            closePayment();
+            setTimeout(() => {
+                resetPayment();
+                openAuthModal();
+            }, 300);
+        } catch (error) {
+            console.error("Failed to initiate email login for guest:", error);
+            setErrorMessage("Could not start the login process. Please try again from the login page.");
+            setPaymentView('ERROR');
+        }
+    }
+  };
+
+  const handleContinueAsGuest = () => {
     clearCart();
     closePayment();
     setTimeout(() => {
         resetPayment();
-        if (session) {
-            // If logged in, redirect to the collectibles page.
-            router.push(`/collectibles`);
-        } else {
-            // If a guest, redirect to the home page.
-            router.push('/');
-        }
+        router.push('/');
+    }, 300);
+  };
+  
+  const handleDoneForLoggedInUser = () => {
+    clearCart();
+    closePayment();
+    setTimeout(() => {
+        resetPayment();
+        router.push('/collectibles');
     }, 300);
   }
 
@@ -120,13 +144,13 @@ export default function PaymentModal() {
                             Your purchases have been connected to the email address <span className="font-semibold text-foreground">{guestEmail}</span>.
                         </p>
                         <p className="text-muted-foreground mb-6">Please click the button below to create an account and see your collectibles!</p>
-                        <Button onClick={() => { /* Logic to open sign-up modal will go here */ alert('Create account functionality coming soon!'); }} className="mb-4">Create Account</Button>
-                        <Button variant="ghost" onClick={handleSuccessAndClear}>Continue as Guest</Button>
+                        <Button onClick={handleCreateAccountAndLogin} className="mb-4">Create Account</Button>
+                        <Button variant="ghost" onClick={handleContinueAsGuest}>Continue as Guest</Button>
                     </>
                 ) : (
                     <>
                         <p className="text-muted-foreground mb-6">Your collectibles have been added to your account. Check your email for a receipt.</p>
-                        <Button onClick={handleSuccessAndClear}>Done</Button>
+                        <Button onClick={handleDoneForLoggedInUser}>Done</Button>
                     </>
                 )}
             </div>

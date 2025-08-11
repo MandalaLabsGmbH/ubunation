@@ -20,7 +20,7 @@ export default function Header() {
 
   return (
     <header className={`${inter.className} w-full py-4 border-b`}>
-      <nav className="container mx-auto flex justify-between items-center">
+      <nav className="pl-10 container mx-auto flex justify-between items-center">
         <Link href="/">
           <div className="relative h-10 w-24">
             <div className="relative h-10 block dark:hidden">
@@ -32,7 +32,7 @@ export default function Header() {
           </div>
         </Link>
 
-        <div className="flex items-center space-x-4 text-sm">
+        <div className="flex items-center space-x-4 text-sm pr-10">
           <button onClick={openCart} className="relative text-foreground/80 hover:text-foreground transition-colors">
             <ShoppingCart className="h-5 w-5" />
             {itemCount > 0 && (
