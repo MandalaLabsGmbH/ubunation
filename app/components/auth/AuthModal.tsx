@@ -13,8 +13,9 @@ import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/ca
 import { configureAmplify } from '@/lib/amplify-config';
 
 export default function AuthModal() {
-  const { isOpen, closeModal, redirectUrl } = useAuthModal(); // Get redirectUrl
-  const router = useRouter(); // Initialize router
+  // Get the new initial state values from the context
+  const { isOpen, closeModal, redirectUrl, initialView, initialEmail } = useAuthModal();
+  const router = useRouter();
 
   useEffect(() => {
     configureAmplify();
@@ -25,7 +26,6 @@ export default function AuthModal() {
     closeModal();
   }
 
-  // Define the success handler
   const handleSuccess = () => {
     if (redirectUrl) {
         router.push(redirectUrl);
@@ -34,7 +34,6 @@ export default function AuthModal() {
     handleClose();
   };
 
-  // Pass the success handler to the hook
   const {
     mode,
     setMode,
@@ -54,8 +53,25 @@ export default function AuthModal() {
     handleConfirm,
     handleBackFromModal,
     handleStartOver,
-    resetFormState
+    resetFormState,
+    // Add new functions from the hook
+    setInitialState,
+    showConfirmationModal
   } = useAuthForm(handleSuccess);
+
+  // Use an effect to set the initial state when the modal opens
+  useEffect(() => {
+    if (isOpen) {
+      if (initialView === 'confirm-code' && initialEmail) {
+        // If we want to start at the code entry screen
+        showConfirmationModal(initialEmail, 'login');
+      } else {
+        // Otherwise, set the mode for the main form
+        setInitialState(initialView, initialEmail);
+      }
+    }
+  }, [isOpen, initialView, initialEmail, setInitialState, showConfirmationModal]);
+
 
   if (!isOpen) {
     return null;

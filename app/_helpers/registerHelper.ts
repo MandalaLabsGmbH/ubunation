@@ -4,7 +4,8 @@ import {
     signIn, 
     confirmSignIn,
     fetchAuthSession,
-    resendSignUpCode
+    resendSignUpCode,
+    signOut as amplifySignOut
     // AuthFlowType has been removed from the import as it's not exported
 } from 'aws-amplify/auth';
 
@@ -37,13 +38,19 @@ export function cognitoResendConfirmation(email: string) {
 // --- Email Login Functions using Amplify ---
 
 export async function cognitoInitiateEmailLogin(email: string) {
-    // The fix is to use the string literal 'CUSTOM_AUTH' directly.
+   try {
+        await amplifySignOut();
+    } catch (error) {
+        console.log("No active session to sign out, proceeding with login:", error);
+    }
+
     const { nextStep } = await signIn({ 
         username: email,
         options: {
             authFlowType: 'CUSTOM_WITHOUT_SRP'
         }
     });
+
     if (nextStep.signInStep !== 'CONFIRM_SIGN_IN_WITH_CUSTOM_CHALLENGE') {
         throw new Error(`Unexpected sign-in step: ${nextStep.signInStep}`);
     }

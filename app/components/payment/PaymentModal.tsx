@@ -75,7 +75,7 @@ export default function PaymentModal() {
             closePayment();
             setTimeout(() => {
                 resetPayment();
-                openAuthModal();
+                openAuthModal({ view: 'confirm-code', email: guestEmail });
             }, 300);
         } catch (error) {
             console.error("Failed to initiate email login for guest:", error);

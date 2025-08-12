@@ -1,4 +1,4 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useState, useCallback } from 'react';
 import { signIn as nextAuthSignIn } from 'next-auth/react';
 import { 
     signIn as amplifySignIn, 
@@ -13,11 +13,12 @@ import {
 } from '@/app/_helpers/registerHelper';
 import { submitUserCollectible } from '@/app/_helpers/apiHelpers';
 import { AuthErrors, AuthError } from '@/app/_helpers/authErrors';
+import { AuthModalView } from '@/app/contexts/AuthModalContext';
 
 export type AuthMode = 'register' | 'login-password' | 'login-email';
 
 export function useAuthForm(onSuccess: () => void) {
-    const [mode, setMode] = useState<AuthMode>('login-email');
+    const [mode, setMode] = useState<AuthModalView>('login-email');
     
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<AuthError>('');
@@ -42,6 +43,20 @@ export function useAuthForm(onSuccess: () => void) {
         setConfirmationCode('');
         setModalError('');
     };
+
+    // New function to set the initial state from the outside
+    const setInitialState = useCallback((view: AuthModalView, initialEmail: string) => {
+        setMode(view);
+        setEmail(initialEmail);
+    }, []);
+
+    // New function to directly show the confirmation modal
+    const showConfirmationModal = useCallback((emailToShow: string, mode: 'register' | 'login') => {
+        setEmail(emailToShow);
+        setModalMode(mode);
+        setIsModalOpen(true);
+    }, []);
+
 
     const handleRegisterSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -240,6 +255,8 @@ export function useAuthForm(onSuccess: () => void) {
         handleConfirm,
         handleBackFromModal,
         handleStartOver,
-        resetFormState
+        resetFormState,
+        setInitialState,
+        showConfirmationModal
     };
 }
