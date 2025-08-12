@@ -15,8 +15,6 @@ import { submitUserCollectible } from '@/app/_helpers/apiHelpers';
 import { AuthErrors, AuthError } from '@/app/_helpers/authErrors';
 import { AuthModalView } from '@/app/contexts/AuthModalContext';
 
-export type AuthMode = 'register' | 'login-password' | 'login-email';
-
 export function useAuthForm(onSuccess: () => void) {
     const [mode, setMode] = useState<AuthModalView>('login-email');
     
@@ -75,18 +73,12 @@ export function useAuthForm(onSuccess: () => void) {
 
         try {
             await cognitoRegister(formEmail, formPassword, { source: 'webapp-registration' });
-            setEmail(formEmail);
-            setPassword(formPassword);
-            setModalMode('register');
-            setIsModalOpen(true);
+            showConfirmationModal(formEmail, 'register');
         } catch (err) {
             if (err instanceof Error && err.name === 'UsernameExistsException') {
                 try {
                     await cognitoResendConfirmation(formEmail);
-                    setEmail(formEmail);
-                    setPassword(formPassword);
-                    setModalMode('register');
-                    setIsModalOpen(true);
+                    showConfirmationModal(formEmail, 'register');
                 } catch (resendErr) {
                     console.log(resendErr);
                     setError(
@@ -114,27 +106,27 @@ export function useAuthForm(onSuccess: () => void) {
         const formData = new FormData(e.currentTarget);
         const formEmail = formData.get('email') as string;
         const formPassword = formData.get('password') as string;
+
         try {
             await amplifySignOut();
             await amplifySignIn({ 
                 username: formEmail, 
                 password: formPassword 
             });
+
             const result = await nextAuthSignIn('credentials', {
                 username: formEmail,
                 password: formPassword,
                 redirect: false,
             });
+
             if (result?.error) throw new Error(result.error);
-            onSuccess(); // Signal success to the calling component
+            onSuccess();
 
         } catch(err) {
              if (err instanceof Error && err.message.includes('UserNotConfirmedException')) {
                 await cognitoResendConfirmation(formEmail);
-                setEmail(formEmail);
-                setPassword(formPassword);
-                setModalMode('register');
-                setIsModalOpen(true);
+                showConfirmationModal(formEmail, 'register');
              } else {
                 setError(AuthErrors.LOGIN_FAILED);
              }
@@ -151,22 +143,9 @@ export function useAuthForm(onSuccess: () => void) {
 
         try {
             await cognitoInitiateEmailLogin(formEmail);
-            setEmail(formEmail);
-            setModalMode('login');
-            setIsModalOpen(true);
+            showConfirmationModal(formEmail, 'login');
         } catch (err) {
-            if (err instanceof Error && err.name === 'UserAlreadyAuthenticatedException') {
-                try {
-                    await amplifySignOut();
-                    await cognitoInitiateEmailLogin(formEmail);
-                    setEmail(formEmail);
-                    setModalMode('login');
-                    setIsModalOpen(true);
-                } catch (retryErr) {
-                    console.log(retryErr);
-                    setError(AuthErrors.SESSION_RESET);
-                }
-            } else if (err instanceof Error && err.name === 'UserNotFoundException') {
+            if (err instanceof Error && err.name === 'UserNotFoundException') {
                 setError(
                     <span>
                         No account found with this email. Please{' '}
@@ -192,9 +171,12 @@ export function useAuthForm(onSuccess: () => void) {
             await amplifySignOut();
             if (modalMode === 'register') {
                 await cognitoConfirm(email, confirmationCode, { source: 'webapp-confirmation' });
+                
                 setIsModalOpen(false);
                 setLoading(true);
+
                 await amplifySignIn({ username: email, password: password });
+
                 const loginResponse = await nextAuthSignIn("credentials", {
                     username: email,
                     password: password,
@@ -213,9 +195,12 @@ export function useAuthForm(onSuccess: () => void) {
                 });
                 if (loginResponse?.error) throw new Error("Token-based login failed.");
             }
-            onSuccess(); // Signal success
+    
+            onSuccess();
     
         } catch (error) {
+            console.error("Authentication confirmation failed:", error);
+
             setLoading(false);
             setIsConfirming(false);
             setIsModalOpen(true);
@@ -242,7 +227,6 @@ export function useAuthForm(onSuccess: () => void) {
         error,
         email,
         isModalOpen,
-        modalMode,
         isConfirming,
         confirmationCode,
         setConfirmationCode,

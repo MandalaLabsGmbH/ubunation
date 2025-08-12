@@ -4,11 +4,11 @@ import { useEffect, JSX } from 'react';
 import { useAuthModal } from '@/app/contexts/AuthModalContext';
 import { X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useAuthForm } from '@/app/features/auth/hooks/useAuthForm';
-import RegisterForm from '@/app/features/auth/components/RegisterForm';
-import LoginPasswordForm from '@/app/features/auth/components/LoginPasswordForm';
-import LoginEmailForm from '@/app/features/auth/components/LoginEmailForm';
-import ConfirmationModal from '@/app/features/auth/components/ConfirmationModal';
+import { useAuthForm } from '@/app//hooks/useAuthForm';
+import RegisterForm from '@/app/components/auth/RegisterForm';
+import LoginPasswordForm from '@/app/components/auth/LoginPasswordForm';
+import LoginEmailForm from '@/app/components/auth/LoginEmailForm';
+import ConfirmationModal from '@/app/components/auth/ConfirmationModal';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { configureAmplify } from '@/lib/amplify-config';
 
