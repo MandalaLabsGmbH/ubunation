@@ -49,6 +49,18 @@ export default function OnboardingModal() {
         setError('');
 
         try {
+            // FIX: Construct the payload with the correct nested structure for authData.
+            // This also safely handles cases where the initial user.authData might be null.
+            const payload = {
+                username: formState.username,
+                userType: 'email',
+                authData: {
+                    ...(user?.authData || {}), // Preserve existing authData fields
+                    fullName: formState.fullName,
+                    country: formState.country,
+                }
+            };
+
             const token = await getAmplifyToken();
             const response = await fetch('/api/db/user', {
                 method: 'PATCH',
@@ -56,10 +68,7 @@ export default function OnboardingModal() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({
-                    ...formState,
-                    userType: 'email'
-                })
+                body: JSON.stringify(payload) // Send the correctly structured payload
             });
 
             if (!response.ok) {
@@ -68,8 +77,11 @@ export default function OnboardingModal() {
             }
 
             const updatedUser = await response.json();
+            // The updatedUser will now have userType: 'email', so the modal will close
+            // on the next render thanks to the useEffect hook.
             setUser(updatedUser);
             setIsOpen(false);
+
         } catch (err) {
              if (err instanceof Error) {
                 setError(err.message);

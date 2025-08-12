@@ -18,6 +18,7 @@ import { UserProvider } from "@/app/contexts/UserContext"; // Import UserProvide
 import { EditProfileModalProvider } from "@/app/contexts/EditProfileModalContext";
 import EditProfileModal from "@/app/components/user/profile/EditProfileModal";
 import OnboardingModal from "@/app/components/user/onboarding/OnboardingModal";
+import UserSessionManager from "@/app/components/user/session/UserSessionManager";
 
 export const metadata: Metadata = {
   title: "Ubunation",
@@ -45,7 +46,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <AuthSessionProvider>
           <LanguageProvider>
             <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-              <UserProvider> {/* Add UserProvider */}
+              <UserProvider>
+                <UserSessionManager />
                 <AuthModalProvider>
                   <CartProvider>
                     <PurchasesModalProvider>

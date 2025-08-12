@@ -38,7 +38,6 @@ export async function GET(request: NextRequest) {
     }
 }
 
-// The Fix: Update the PATCH method to use the correct updateUserByUserId endpoint.
 export async function PATCH(request: NextRequest) {
     try {
         const token = await getToken({ req: request, secret: process.env.AUTH_SECRET });
@@ -46,7 +45,6 @@ export async function PATCH(request: NextRequest) {
             return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
         }
 
-        // Step 1: Get the user's internal database ID.
         const userResponse = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/User/getUserByEmail`, {
             params: { email: token.email },
             headers: { 'Authorization': `Bearer ${token.idToken}` }
@@ -57,17 +55,18 @@ export async function PATCH(request: NextRequest) {
             return NextResponse.json({ message: 'User not found' }, { status: 404 });
         }
 
-        // Step 2: Get the update data from the request body.
+        // Get the entire body from the incoming request.
         const body = await request.json();
-        const { username, authData } = body;
+        
+        // Construct the payload by spreading the entire body.
+        // This ensures 'userType', 'username', and 'authData' are all included.
+        const payload = { 
+            userId: userId, 
+            ...body 
+        };
 
-        // Step 3: Call the correct backend endpoint with the userId.
         const response = await axios.patch(`${NEXT_PUBLIC_API_BASE_URL}/User/updateUserByUserId`, 
-            { 
-                userId: userId, 
-                username, 
-                authData 
-            }, 
+            payload, 
             {
                 headers: { 'Authorization': `Bearer ${token.idToken}` }
             }
@@ -78,10 +77,10 @@ export async function PATCH(request: NextRequest) {
     } catch (e) {
         console.error("API route PATCH /api/db/user error:", e);
         if (axios.isAxiosError(e)) {
-            const err = e as AxiosError;
+            console.error("Backend Error Details:", e.response?.data);
             return NextResponse.json(
-                { message: err.message, details: err.response?.data },
-                { status: err.response?.status || 500 }
+                { message: e.message, details: e.response?.data },
+                { status: e.response?.status || 500 }
             );
         }
         return NextResponse.json({ message: 'An internal server error occurred' }, { status: 500 });
