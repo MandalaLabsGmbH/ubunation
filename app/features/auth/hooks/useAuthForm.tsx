@@ -99,19 +99,17 @@ export function useAuthForm(onSuccess: () => void) {
         const formData = new FormData(e.currentTarget);
         const formEmail = formData.get('email') as string;
         const formPassword = formData.get('password') as string;
-
         try {
+            await amplifySignOut();
             await amplifySignIn({ 
                 username: formEmail, 
                 password: formPassword 
             });
-
             const result = await nextAuthSignIn('credentials', {
                 username: formEmail,
                 password: formPassword,
                 redirect: false,
             });
-
             if (result?.error) throw new Error(result.error);
             onSuccess(); // Signal success to the calling component
 
@@ -177,26 +175,18 @@ export function useAuthForm(onSuccess: () => void) {
     
         try {
             await amplifySignOut();
-            console.log('hook test1');
             if (modalMode === 'register') {
-                console.log('hook test2');
                 await cognitoConfirm(email, confirmationCode, { source: 'webapp-confirmation' });
-                console.log('hook test3');
                 setIsModalOpen(false);
-                console.log('hook test4');
                 setLoading(true);
-                console.log('hook test5');
                 await amplifySignIn({ username: email, password: password });
-                console.log('hook test6');
                 const loginResponse = await nextAuthSignIn("credentials", {
                     username: email,
                     password: password,
                     redirect: false,
                 });
-                console.log('hook test7');
                 if (loginResponse?.error) throw new Error("Login failed after confirmation.");
                 await submitUserCollectible(email);
-                console.log('hook test8');
             } else {
                 const idToken = await cognitoCompleteEmailLogin(confirmationCode);
                 setIsModalOpen(false);
@@ -208,7 +198,6 @@ export function useAuthForm(onSuccess: () => void) {
                 });
                 if (loginResponse?.error) throw new Error("Token-based login failed.");
             }
-            console.log('hook test9');
             onSuccess(); // Signal success
     
         } catch (error) {
