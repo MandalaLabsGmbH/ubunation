@@ -116,11 +116,11 @@ export default function HomePageClient({ heroCollectible, featuredCollectibles, 
 
           </div>
         </section>
-          {/* --- Recently Purchased Collectibles Section --- */}
-        <section className="mt-20 md:mt-32">
+          {/* --- Last Donators Section --- */}
+        <section className="mt-10 md:mt-15">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
-              Recently Purchased Collectibles
+              Last Donators
             </h2>
           </div>
 
@@ -132,7 +132,7 @@ export default function HomePageClient({ heroCollectible, featuredCollectibles, 
 
                 return (
                   <div key={item.userCollectibleId} className="aspect-square w-full">
-                    <Card className="w-full h-full overflow-hidden rounded-lg shadow-md">
+                    <Card className="pl-5 pr-5 w-full h-full overflow-hidden rounded-lg shadow-lg">
                       <div className="relative w-full h-full">
                         <CollectibleImage
                           src={imageUrl}
