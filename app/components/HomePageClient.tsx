@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Card, CardContent } from "@/components/ui/card";
 import UserButton from "@/app/components/UserButton";
 import { useTranslation } from '@/app/hooks/useTranslation';
+import CollectibleImage from './CollectibleImage';
 
 // Define the types for the props, matching the multilingual structure
 interface Collectible {
@@ -17,12 +18,25 @@ interface Collectible {
   };
 }
 
+interface RecentPurchase {
+  mint: number;
+  userCollectibleId: number;
+  collectible: {
+    name: { en: string; de: string; };
+    imageRef?: {
+      url: string;
+      img: string;
+    };
+  };
+}
+
 interface HomePageClientProps {
   heroCollectible: Collectible | null;
   featuredCollectibles: Collectible[];
+  recentPurchases: RecentPurchase[];
 }
 
-export default function HomePageClient({ heroCollectible, featuredCollectibles }: HomePageClientProps) {
+export default function HomePageClient({ heroCollectible, featuredCollectibles, recentPurchases }: HomePageClientProps) {
   const { language, translate } = useTranslation();
 
   // Helper function to safely get the correct language string
@@ -101,6 +115,42 @@ export default function HomePageClient({ heroCollectible, featuredCollectibles }
             ))}
 
           </div>
+        </section>
+          {/* --- Recently Purchased Collectibles Section --- */}
+        <section className="mt-20 md:mt-32">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
+              Recently Purchased Collectibles
+            </h2>
+          </div>
+
+          {recentPurchases && recentPurchases.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 md:gap-6">
+              {recentPurchases.map(item => {
+                const imageUrl = `${item.collectible.imageRef?.url}/${item.mint}.png`;
+                const displayName = getLocalizedString(item.collectible.name, language);
+
+                return (
+                  <div key={item.userCollectibleId} className="aspect-square w-full">
+                    <Card className="w-full h-full overflow-hidden rounded-lg shadow-md">
+                      <div className="relative w-full h-full">
+                        <CollectibleImage
+                          src={imageUrl}
+                          fallbackSrc="/images/ubuLion.jpg"
+                          alt={`${displayName} - Mint #${item.mint}`}
+                          fill
+                          style={{ objectFit: 'cover' }}
+                          className="bg-muted"
+                        />
+                      </div>
+                    </Card>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-center text-muted-foreground">No recent purchases to display right now.</p>
+          )}
         </section>
       </main>
     </div>

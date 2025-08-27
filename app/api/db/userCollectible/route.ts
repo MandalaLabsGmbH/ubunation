@@ -7,14 +7,51 @@ const NEXT_PUBLIC_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 export async function GET(request: NextRequest) {
     try {
         const token = await getToken({ req: request, secret: process.env.AUTH_SECRET });
+        const { searchParams } = new URL(request.url);
+        const userCollectibleId = searchParams.get("userCollectibleId");
+        const getMostRecent = searchParams.get("getMostRecent"); // New parameter
+
+        // This is the new, public case to fetch the 5 most recent items for the home page.
+        if (getMostRecent === 'true') {
+            const now = new Date().toISOString();
+            const recentResponse = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/UserCollectible/getUserCollectiblesByLastOwned`, {
+                params: {
+                    start_date: now,
+                    limit: 5,
+                }
+            });
+
+            const recentUserCollectibles = recentResponse.data;
+            if (!recentUserCollectibles || recentUserCollectibles.length === 0) {
+                return NextResponse.json([]);
+            }
+
+            // Enrich the data with collectible details to get the image reference
+            const enrichedCollectibles = await Promise.all(
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                recentUserCollectibles.map(async (userCollectible: any) => {
+                    try {
+                        const collectibleResponse = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/Collectible/getCollectibleByCollectibleId`, {
+                            params: { collectibleId: userCollectible.collectibleId }
+                        });
+                        return { ...userCollectible, collectible: collectibleResponse.data };
+                    } catch (enrichError) {
+                        console.error(`Failed to enrich recent userCollectible ${userCollectible.userCollectibleId}:`, enrichError);
+                        return null; // Avoid crashing if one collectible fails
+                    }
+                })
+            );
+
+            const finalCollectibles = enrichedCollectibles.filter(item => item !== null);
+            return NextResponse.json(finalCollectibles);
+        }
+
+        // The Fix: Check if a specific userCollectibleId is being requested.
+        // This part requires authorization
         if (!token?.idToken) {
             return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
         }
-
-        const { searchParams } = new URL(request.url);
-        const userCollectibleId = searchParams.get("userCollectibleId");
-
-        // The Fix: Check if a specific userCollectibleId is being requested.
+        
         if (userCollectibleId) {
             // This is the call made by the purchases modal.
             const response = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/UserCollectible/getUserCollectibleByUserCollectibleId`, {

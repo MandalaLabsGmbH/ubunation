@@ -12,6 +12,19 @@ interface Collectible {
   };
 }
 
+// Define the type for the new recently purchased data
+interface RecentPurchase {
+  mint: number;
+  userCollectibleId: number;
+  collectible: {
+    name: { en: string; de: string; };
+    imageRef?: {
+      url: string;
+      img: string;
+    };
+  };
+}
+
 async function getAllCollectibles(): Promise<Collectible[]> {
   try {
     const requestHeaders = await headers();
@@ -39,8 +52,33 @@ async function getAllCollectibles(): Promise<Collectible[]> {
   }
 }
 
+async function getRecentPurchases(): Promise<RecentPurchase[]> {
+  try {
+    const response = await fetch(`${process.env.NEXTAUTH_URL}/api/db/userCollectible?getMostRecent=true`, {
+      method: 'GET',
+      cache: 'no-store' // Ensure we always get the latest data
+    });
+
+    if (!response.ok) {
+      console.error(`Failed to fetch recent purchases:`, await response.text());
+      return [];
+    }
+    return response.json();
+  } catch (error) {
+    console.error(`Error in getRecentPurchases:`, error);
+    return [];
+  }
+}
+
 export default async function UBUNΛTIONRootPage() {
-  const allCollectibles: Collectible[] = await getAllCollectibles();
+  // Fetch all data in parallel for better performance
+  const [
+    allCollectibles,
+    recentPurchases
+  ] = await Promise.all([
+    getAllCollectibles(),
+    getRecentPurchases()
+  ]);
   
   const heroCollectible: Collectible | null = allCollectibles.length > 0 ? allCollectibles[0] : null;
   const featuredCollectibles = allCollectibles.slice(1, 4);
@@ -48,7 +86,8 @@ export default async function UBUNΛTIONRootPage() {
   return (
     <HomePageClient 
       heroCollectible={heroCollectible} 
-      featuredCollectibles={featuredCollectibles} 
+      featuredCollectibles={featuredCollectibles}
+      recentPurchases={recentPurchases}
     />
   );
 }
