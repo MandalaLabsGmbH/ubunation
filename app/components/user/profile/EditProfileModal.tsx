@@ -129,11 +129,11 @@ export default function EditProfileModal() {
         return (
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
-                    <Label htmlFor="firstName">Full Name</Label>
+                    <Label htmlFor="firstName">First Name</Label>
                     <Input id="firstName" name="firstName" value={formState.firstName} onChange={handleChange} placeholder="e.g. John" />
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="lastName">Full Name</Label>
+                    <Label htmlFor="lastName">Last Name</Label>
                     <Input id="lastName" name="lastName" value={formState.lastName} onChange={handleChange} placeholder="e.g. Doe" />
                 </div>
                 <div className="space-y-2">

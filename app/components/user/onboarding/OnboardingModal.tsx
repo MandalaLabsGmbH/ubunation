@@ -107,11 +107,11 @@ export default function OnboardingModal() {
                 </div>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <Label htmlFor="firstName">Full Name</Label>
+                        <Label htmlFor="firstName">First Name</Label>
                         <Input id="firstName" name="firstName" value={formState.firstName} onChange={handleChange} required />
                     </div>
                     <div>
-                        <Label htmlFor="lasttName">Full Name</Label>
+                        <Label htmlFor="lasttName">Last Name</Label>
                         <Input id="lastName" name="lastName" value={formState.lastName} onChange={handleChange} required />
                     </div>
                     <div>
