@@ -9,7 +9,8 @@ export interface User {
     email: string;
     userType: 'onboarding' | 'email' | 'unregistered' | 'username' | 'admin';
     authData?: {
-        fullName?: string;
+        firstName?: string;
+        lastName?: string;
         country?: string;
         newsletter?: '1' | '0';
     };

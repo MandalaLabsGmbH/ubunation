@@ -15,7 +15,8 @@ export default function OnboardingModal() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [formState, setFormState] = useState({
-        fullName: '',
+        firstName: '',
+        lastName: '',
         country: '',
         username: ''
     });
@@ -24,7 +25,8 @@ export default function OnboardingModal() {
         if (user && (user.userType === 'onboarding' || user.userType === 'unregistered')) {
             setIsOpen(true);
             setFormState({
-                fullName: user.authData?.fullName || '',
+                firstName: user.authData?.firstName || '',
+                lastName: user.authData?.lastName || '',
                 country: user.authData?.country || '',
                 username: user.username || ''
             });
@@ -41,7 +43,7 @@ export default function OnboardingModal() {
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
-        if (!formState.fullName || !formState.country || !formState.username) {
+        if (!formState.firstName || !formState.lastName || !formState.country || !formState.username) {
             setError("All fields are required.");
             return;
         }
@@ -56,7 +58,8 @@ export default function OnboardingModal() {
                 userType: 'email',
                 authData: {
                     ...(user?.authData || {}), // Preserve existing authData fields
-                    fullName: formState.fullName,
+                    firstName: formState.firstName,
+                    lastName: formState.lastName,
                     country: formState.country,
                 }
             };
@@ -104,8 +107,12 @@ export default function OnboardingModal() {
                 </div>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <Label htmlFor="fullName">Full Name</Label>
-                        <Input id="fullName" name="fullName" value={formState.fullName} onChange={handleChange} required />
+                        <Label htmlFor="firstName">Full Name</Label>
+                        <Input id="firstName" name="firstName" value={formState.firstName} onChange={handleChange} required />
+                    </div>
+                    <div>
+                        <Label htmlFor="lasttName">Full Name</Label>
+                        <Input id="lastName" name="lastName" value={formState.lastName} onChange={handleChange} required />
                     </div>
                     <div>
                         <Label htmlFor="country">Country</Label>

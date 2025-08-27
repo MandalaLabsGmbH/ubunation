@@ -13,7 +13,8 @@ import { X, Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation'; // Import the router
 
 type FormState = {
-    fullName: string;
+    firstName: string;
+    lastName: string;
     username: string;
     country: string;
     newsletter: boolean;
@@ -27,7 +28,8 @@ export default function EditProfileModal() {
     const router = useRouter(); // Initialize the router
 
     const [formState, setFormState] = useState<FormState>({
-        fullName: '',
+        firstName: '',
+        lastName: '',
         username: '',
         country: '',
         newsletter: false,
@@ -38,7 +40,8 @@ export default function EditProfileModal() {
     useEffect(() => {
         if (user) {
             setFormState({
-                fullName: user.authData?.fullName || '',
+                firstName: user.authData?.firstName || '',
+                lastName: user.authData?.lastName || '',
                 username: user.username || '',
                 country: user.authData?.country || '',
                 newsletter: user.authData?.newsletter === '1',
@@ -62,7 +65,8 @@ export default function EditProfileModal() {
 
         const newAuthData = {
             ...(user?.authData || {}), // Start with existing data or an empty object
-            fullName: formState.fullName,
+            firstName: formState.firstName,
+            lastName: formState.lastName,
             country: formState.country,
             newsletter: formState.newsletter ? '1' : '0',
         };
@@ -125,8 +129,12 @@ export default function EditProfileModal() {
         return (
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
-                    <Label htmlFor="fullName">Full Name</Label>
-                    <Input id="fullName" name="fullName" value={formState.fullName} onChange={handleChange} placeholder="e.g. John Doe" />
+                    <Label htmlFor="firstName">Full Name</Label>
+                    <Input id="firstName" name="firstName" value={formState.firstName} onChange={handleChange} placeholder="e.g. John" />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="lastName">Full Name</Label>
+                    <Input id="lastName" name="lastName" value={formState.lastName} onChange={handleChange} placeholder="e.g. Doe" />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="username">Username</Label>
