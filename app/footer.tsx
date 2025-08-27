@@ -1,45 +1,91 @@
+'use client'
+
 import Link from 'next/link';
 import { inter } from './fonts'; // Assuming you have fonts set up like this
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+
+// SVG components for social media icons for better styling control
+const FacebookIcon = () => (
+  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <path fillRule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clipRule="evenodd" />
+  </svg>
+);
+
+const TwitterXIcon = () => (
+  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+  </svg>
+);
+
+const InstagramIcon = () => (
+    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path fillRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 16c-3.314 0-6-2.686-6-6s2.686-6 6-6 6 2.686 6 6-2.686 6-6 6zm0-10c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm6.5-3c-.828 0-1.5.672-1.5 1.5s.672 1.5 1.5 1.5 1.5-.672 1.5-1.5-.672-1.5-1.5-1.5z" clipRule="evenodd" />
+    </svg>
+);
+
+const LinkedInIcon = () => (
+    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+    </svg>
+);
+
 
 export default function Footer() {
-  const mainLinks = [
-    { href: 'https://ubunation.com/', label: 'About', key: '1' },
-    { href: 'https://ubunation.com/wlfa/?_gl=1*l81gcz*_ga*MTM5NDE1MDc2MS4xNzUzODk1NTYz*_ga_V408MXZKKQ*czE3NTM4OTU1NjIkbzEkZzEkdDE3NTM4OTU3MTIkajQ0JGwwJGgw', label: 'Vision', key: '2' },
-    { href: 'https://ubunation.com/blog/', label: 'Blog', key: '3' },
-    { href: 'https://ubunation.com/', label: 'Contact Us', key: '4' },
-  ];
-
   const legalLinks = [
     { href: 'https://ubunation.com/imprint-content/', label: 'Imprint', key: '5' },
-    { href: 'https://ubunation.com/terms-and-conditions/', label: 'Terms of Service', key: '6' },
-    { href: 'https://ubunation.com/data-privacy-2/', label: 'Privacy', key: '7' },
+    { href: 'https://ubunation.com/terms-and-conditions/', label: 'Terms of Use', key: '6' },
+  ];
+
+  const socialLinks = [
+    { href: 'https://www.facebook.com/ubunation', icon: <FacebookIcon />, label: 'Facebook' },
+    { href: 'https://x.com/ubunationhq', icon: <TwitterXIcon />, label: 'Twitter/X' },
+    { href: 'https://www.instagram.com/ubunation/', icon: <InstagramIcon />, label: 'Instagram' },
+    { href: 'https://www.linkedin.com/company/ubunation/', icon: <LinkedInIcon />, label: 'LinkedIn' },
   ];
 
   return (
-    <footer className={`${inter.className} mt-16 border-t`}>
+    <footer className={`${inter.className} bg-card border-t bg-sky-800`}>
       <div className="container mx-auto px-6 py-8">
-        {/* Top row with navigation links */}
-        <div className="flex flex-col items-center justify-between gap-y-4 md:flex-row">
-          {/* Main navigation links */}
-          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm font-medium text-foreground md:justify-start">
-            {mainLinks.map((link) => (
-              <Link key={link.key} href={link.href} target="_blank" className="hover:underline">
-                {link.label}
-              </Link>
-            ))}
-          </div>
-          {/* Legal navigation links */}
-          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm font-medium text-foreground md:justify-end">
+        {/* Top section with links, social, and newsletter */}
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-y-8 lg:gap-y-4">
+          
+          {/* Legal Links */}
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm font-medium text-foreground/80">
             {legalLinks.map((link) => (
-              <Link key={link.key} href={link.href} target="_blank" className="hover:underline">
+              <Link key={link.key} href={link.href} target="_blank" className="hover:text-primary transition-colors text-white">
                 {link.label}
               </Link>
             ))}
           </div>
+          
+          {/* Social Media Icons */}
+          <div className="flex justify-center gap-x-6">
+            {socialLinks.map((social) => (
+              <Link key={social.label} href={social.href} target="_blank" rel="noopener noreferrer" className="text-foreground/80 hover:text-primary transition-colors text-white">
+                <span className="sr-only">{social.label}</span>
+                {social.icon}
+              </Link>
+            ))}
+          </div>
+
+          {/* Newsletter Form */}
+          <form 
+            action="mailto:nico@mandala-labs.com?subject=New email for the Ubunation mailing list"
+            method="post"
+            encType="text/plain"
+            className="flex max-w-med items-center space-x-2"
+          >
+            <Label htmlFor="email" className="text-white">Subscribe to our Newsletter</Label>
+            <Input type="email" name="email" placeholder="Email" className="bg-background" required />
+            <Button type="submit">Subscribe</Button>
+          </form>
+
         </div>
 
         {/* Bottom row with copyright */}
-        <div className="mt-8 text-center text-sm text-foreground">
+        <div className="text-white mt-8 text-center text-sm text-foreground/60">
           <p>© UBUNΛTION 2025</p>
         </div>
       </div>

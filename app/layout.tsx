@@ -55,7 +55,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                         <PaymentProvider>
                           <div className="flex flex-col min-h-screen bg-background text-foreground">
                             <Header />
-                            <main className="flex-grow container mx-auto p-6">
+                            <main>
                                 {children}
                             </main>
                             <Footer />
