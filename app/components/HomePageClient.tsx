@@ -37,7 +37,7 @@ interface HomePageClientProps {
 }
 
 export default function HomePageClient({ heroCollectible, featuredCollectibles, recentPurchases }: HomePageClientProps) {
-  const { language, translate } = useTranslation();
+  const { language } = useTranslation();
 
   // Helper function to safely get the correct language string
   const getLocalizedString = (obj: { en: string; de: string; }, lang: 'en' | 'de') => {
@@ -59,17 +59,6 @@ export default function HomePageClient({ heroCollectible, featuredCollectibles, 
         <section className="w-full py-12 md:py-20 bg-zinc-50 dark:bg-zinc-900">
           {/* className="flex-grow container mx-auto p-6" */}
           <div className="flex-grow p-6 container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-12">
-            {/* Text Content */}
-            <div className="md:w-1/2 text-center md:text-left">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-4 tracking-tight">
-                {heroCollectible ? getLocalizedString(heroCollectible.name, language) : "ULT Dream Careers Lion Collection by"} <span className="text-blue-600">UBUNɅTION</span>
-              </h1>
-              <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                {heroCollectible ? getLocalizedString(heroCollectible.description, language).replace(/<[^>]*>?/gm, '').substring(0, 400) + '...' : "Default description..."}
-              </p>
-              <UserButton label={translate('donateAndGetNft')} route='/purchase' />
-            </div>
-            
             {/* Image Content */}
             {heroCollectible && heroCollectible.imageRef && (
               <div className="md:w-1/2 flex justify-center">
@@ -84,6 +73,15 @@ export default function HomePageClient({ heroCollectible, featuredCollectibles, 
               </Link>
               </div>
             )}
+            {/* Text Content */}
+            <Card key={'hero text'} className="bg-card w-full flex flex-col overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 ease-in-out shadow-lg hover:shadow-2xl">
+            <div className="py-5 pl-10 pr-10 text-left">
+              <p className="text-med text-muted-foreground mb-8 leading-relaxed">
+                {heroCollectible ? getLocalizedString(heroCollectible.description, language).replace(/<[^>]*>?/gm, '').substring(0, 400) + '...' : "Default description..."}
+              </p>
+              <UserButton label="Learn More" route='/purchase' type='readMore' />
+            </div>
+            </Card>
           </div>
         </section>
 
