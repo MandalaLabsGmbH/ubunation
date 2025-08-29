@@ -6,10 +6,28 @@ import { Card, CardContent } from "@/components/ui/card";
 import UserButton from "@/app/components/UserButton";
 import { useTranslation } from '@/app/hooks/useTranslation';
 import CollectibleImage from './CollectibleImage';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
+
 
 // Define the types for the props, matching the multilingual structure
 interface Collectible {
   collectibleId: number;
+  name: { en: string; de: string; };
+  description: { en: string; de: string; };
+  imageRef?: {
+    url: string;
+    img: string;
+  };
+}
+
+interface Collection {
+  collectionId: number;
   name: { en: string; de: string; };
   description: { en: string; de: string; };
   imageRef?: {
@@ -31,12 +49,12 @@ interface RecentPurchase {
 }
 
 interface HomePageClientProps {
-  heroCollectible: Collectible | null;
   featuredCollectibles: Collectible[];
+  featuredCollections: Collection[];
   recentPurchases: RecentPurchase[];
 }
 
-export default function HomePageClient({ heroCollectible, featuredCollectibles, recentPurchases }: HomePageClientProps) {
+export default function HomePageClient({ featuredCollectibles, featuredCollections, recentPurchases }: HomePageClientProps) {
   const { language } = useTranslation();
 
   // Helper function to safely get the correct language string
@@ -53,35 +71,48 @@ export default function HomePageClient({ heroCollectible, featuredCollectibles, 
                  <Image src="/images/cover.jpg" alt="coverImage" fill style={{objectFit:"cover"}}/>
               </div>
         </section>
-              
-             
-        {/* --- Hero Section --- */}
+
+         {/* --- Hero Section --- */}
         <section className="w-full py-12 md:py-20 bg-zinc-50 dark:bg-zinc-900">
-          {/* className="flex-grow container mx-auto p-6" */}
-          <div className="flex-grow p-6 container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-12">
-            {/* Image Content */}
-            {heroCollectible && heroCollectible.imageRef && (
-              <div className="md:w-1/2 flex justify-center">
-              <Link href={`/campaign/${heroCollectible.collectibleId}`} className="hover:underline">
-                <Image 
-                  src={heroCollectible.imageRef.img} 
-                  alt={getLocalizedString(heroCollectible.name, language)} 
-                  className="rounded-lg shadow-2xl w-full max-w-md"
-                  width={500}
-                  height={500}
-                />
-              </Link>
-              </div>
-            )}
-            {/* Text Content */}
-            <Card key={'hero text'} className="bg-card w-full flex flex-col overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 ease-in-out shadow-lg hover:shadow-2xl">
-            <div className="py-5 pl-10 pr-10 text-left">
-              <p className="text-med text-muted-foreground mb-8 leading-relaxed">
-                {heroCollectible ? getLocalizedString(heroCollectible.description, language).replace(/<[^>]*>?/gm, '').substring(0, 400) + '...' : "Default description..."}
-              </p>
-              <UserButton label="Learn More" route='/purchase' type='readMore' />
-            </div>
-            </Card>
+          {/* FIX: Added 'relative' to this container to position the buttons correctly */}
+          <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
+            <Carousel className="w-full">
+              <CarouselContent>
+                {featuredCollections.map(collection => (
+                  <CarouselItem key={collection.collectionId}>
+                    <div className="w-full flex flex-col md:flex-row items-center justify-between gap-12 p-1">
+                      {/* Image Content */}
+                      {collection.imageRef && (
+                        <div className="md:w-1/2 flex justify-center">
+                          <Link href={`/campaign/1`} className="hover:underline">
+                            <Image 
+                              src={collection.imageRef.img} 
+                              alt="hero collection"
+                              className="rounded-lg shadow-2xl w-full max-w-md"
+                              width={500}
+                              height={500}
+                            />
+                          </Link>
+                        </div>
+                      )}
+                      {/* Text Content */}
+                      <div className="md:w-1/2">
+                        <Card key={'hero text'} className="bg-card flex flex-col overflow-hidden shadow-lg">
+                          <div className="py-5 pl-10 pr-10 text-left">
+                            <p className="text-med text-muted-foreground mb-8 leading-relaxed">
+                              {collection ? getLocalizedString(collection.description, language).replace(/<[^>]*>?/gm, '').substring(0, 400) + '...' : "Default description..."}
+                            </p>
+                            <UserButton label="Learn More" route='/purchase' type='readMore' />
+                          </div>
+                        </Card>
+                      </div>
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="hidden md:flex absolute left-[-1rem] top-1/2 -translate-y-1/2 z-20" />
+              <CarouselNext className="hidden md:flex absolute right-[-1rem] top-1/2 -translate-y-1/2 z-20" />
+            </Carousel>
           </div>
         </section>
 

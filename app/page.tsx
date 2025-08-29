@@ -12,6 +12,16 @@ interface Collectible {
   };
 }
 
+interface Collection {
+  collectionId: number;
+  name: { en: string; de: string; };
+  description: { en: string; de: string; };
+  imageRef?: {
+    url: string;
+    img: string;
+  };
+}
+
 // Define the type for the new recently purchased data
 interface RecentPurchase {
   mint: number;
@@ -52,6 +62,35 @@ async function getAllCollectibles(): Promise<Collectible[]> {
   }
 }
 
+async function getAllCollections(): Promise<Collection[]> {
+  try {
+    const requestHeaders = await headers();
+    const cookie = requestHeaders.get('cookie');
+    const apiHeaders = new Headers();
+    if (cookie) {
+      apiHeaders.append('Cookie', cookie);
+    }
+    
+    const response = await fetch(`${process.env.NEXTAUTH_URL}/api/db/collection?limit=2`, {
+      method: 'GET',
+      headers: apiHeaders,
+      cache: 'no-store'
+    });
+
+    if (!response.ok) {
+      console.error(`Failed to fetch all collections:`, await response.text());
+      return [];
+    }
+    const data = await response.json();
+    console.log("HERE IS DAATA");
+    console.log(data);
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.error(`Error in getAllCollections:`, error);
+    return [];
+  }
+}
+
 async function getRecentPurchases(): Promise<RecentPurchase[]> {
   try {
     const response = await fetch(`${process.env.NEXTAUTH_URL}/api/db/userCollectible?getMostRecent=true`, {
@@ -74,19 +113,20 @@ export default async function UBUNΛTIONRootPage() {
   // Fetch all data in parallel for better performance
   const [
     allCollectibles,
+    allCollections,
     recentPurchases
   ] = await Promise.all([
     getAllCollectibles(),
+    getAllCollections(),
     getRecentPurchases()
   ]);
-  
-  const heroCollectible: Collectible | null = allCollectibles.length > 0 ? allCollectibles[0] : null;
   const featuredCollectibles = allCollectibles.slice(1, 4);
+  const featuredCollections = allCollections;
 
   return (
     <HomePageClient 
-      heroCollectible={heroCollectible} 
       featuredCollectibles={featuredCollectibles}
+      featuredCollections={featuredCollections}
       recentPurchases={recentPurchases}
     />
   );
