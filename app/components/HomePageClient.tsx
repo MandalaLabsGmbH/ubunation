@@ -73,9 +73,14 @@ export default function HomePageClient({ featuredCollectibles, featuredCollectio
         </section>
 
          {/* --- Hero Section --- */}
-        <section className="w-full py-12 md:py-20 bg-zinc-50 dark:bg-zinc-900">
+        <section className="container relative mx-auto px-4 sm:px-6 lg:px-8">
           {/* FIX: Added 'relative' to this container to position the buttons correctly */}
-          <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="w-full py-12 md:py-20 bg-zinc-50 dark:bg-zinc-900">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
+                Featured Project
+              </h2>
+            </div>
             <Carousel className="w-full" opts={{align: "start",loop: true,}} plugins={[Autoplay({delay: 12000,})]}>
               <CarouselContent>
                 {featuredCollections.map(collection => (
@@ -83,7 +88,7 @@ export default function HomePageClient({ featuredCollectibles, featuredCollectio
                     <div className="w-full flex flex-col md:flex-row items-center justify-between gap-12 p-1">
                       {/* Image Content */}
                       {collection.imageRef && (
-                        <div className="md:w-1/2 flex justify-center">
+                        <div className="shrink md:w-1/2 flex justify-center">
                           <Link href={`/campaign/1`} className="hover:underline">
                             <Image 
                               src={collection.imageRef.img} 
@@ -96,10 +101,10 @@ export default function HomePageClient({ featuredCollectibles, featuredCollectio
                         </div>
                       )}
                       {/* Text Content */}
-                      <div className="md:w-1/2">
+                      <div className="w-full flex flex-col md:flex-row items-center justify-between gap-12 p-1">
                         <Card key={'hero text'} className="bg-card flex flex-col overflow-hidden shadow-lg">
                           <div className="py-5 pl-10 pr-10 text-left">
-                            <p className="text-med text-muted-foreground mb-8 leading-relaxed">
+                            <p className="text-md text-muted-foreground mb-8 leading-relaxed md:text-sm">
                               {collection ? getLocalizedString(collection.description, language).replace(/<[^>]*>?/gm, '').substring(0, 400) + '...' : "Default description..."}
                             </p>
                             <UserButton label="Learn More" route='/purchase' type='readMore' />
@@ -116,8 +121,8 @@ export default function HomePageClient({ featuredCollectibles, featuredCollectio
         </section>
 
         {/* --- Charity Campaigns Section --- */}
-        <section className="w-full py-12 md:py-20 bg-background">
-          <div className="container flex-grow p-6 mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="container flex-grow p-6 mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="w-full py-12 md:py-20 bg-background">
             <div className="text-center mb-12">
               <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
                 Our Projects
@@ -152,8 +157,8 @@ export default function HomePageClient({ featuredCollectibles, featuredCollectio
         </section>
 
         {/* --- Last Donators Section --- */}
-        <section className="w-full py-12 md:py-20 bg-zinc-50 dark:bg-zinc-900">
-          <div className="container flex-grow p-6 mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="container flex-grow p-6 mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="w-full py-12 md:py-20 bg-zinc-50 dark:bg-zinc-900">
             <div className="text-center mb-12">
               <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
                 Last Donators
