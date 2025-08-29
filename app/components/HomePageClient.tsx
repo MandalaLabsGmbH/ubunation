@@ -1,16 +1,21 @@
 'use client'
 
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent } from "@/components/ui/card";
 import UserButton from "@/app/components/UserButton";
 import { useTranslation } from '@/app/hooks/useTranslation';
 import CollectibleImage from './CollectibleImage';
+import { useMediaQuery } from '@/app/hooks/useMediaQuery'
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
+  CarouselPrevious,
+  CarouselNext,
   CarouselDots,
+  type CarouselApi,
 } from "@/components/ui/carousel"
 import Autoplay from "embla-carousel-autoplay"
 
@@ -56,6 +61,17 @@ interface HomePageClientProps {
 
 export default function HomePageClient({ featuredCollectibles, featuredCollections, recentPurchases }: HomePageClientProps) {
   const { language } = useTranslation();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [api, setApi] = useState<CarouselApi>()
+
+  const isMobile = useMediaQuery('md');
+ 
+  useEffect(() => {
+    if (!api) return;
+    api.on("select", () => {
+      console.log("Carousel slide changed to:", api.selectedScrollSnap() + 1)
+    })
+  }, [api])
 
   // Helper function to safely get the correct language string
   const getLocalizedString = (obj: { en: string; de: string; }, lang: 'en' | 'de') => {
@@ -73,9 +89,9 @@ export default function HomePageClient({ featuredCollectibles, featuredCollectio
         </section>
 
          {/* --- Hero Section --- */}
-        <section className="container relative mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="w-full py-12 md:py-20 bg-zinc-50 dark:bg-zinc-900">
           {/* FIX: Added 'relative' to this container to position the buttons correctly */}
-          <div className="w-full py-12 md:py-20 bg-zinc-50 dark:bg-zinc-900">
+          <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
                 Featured Project
@@ -121,8 +137,8 @@ export default function HomePageClient({ featuredCollectibles, featuredCollectio
         </section>
 
         {/* --- Charity Campaigns Section --- */}
-        <section className="container flex-grow p-6 mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="w-full py-12 md:py-20 bg-background">
+        <section className="w-full py-12 md:py-20 bg-background">
+          <div className="container flex-grow p-6 mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
                 Our Projects
@@ -157,37 +173,70 @@ export default function HomePageClient({ featuredCollectibles, featuredCollectio
         </section>
 
         {/* --- Last Donators Section --- */}
-        <section className="container flex-grow p-6 mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="w-full py-12 md:py-20 bg-zinc-50 dark:bg-zinc-900">
+        <section className="w-full py-12 md:py-20 bg-zinc-50 dark:bg-zinc-900">
+          <div className="container flex-grow p-6 mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
                 Last Donators
               </h2>
             </div>
             {recentPurchases && recentPurchases.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 md:gap-6">
-                {recentPurchases.map(item => {
-                  const imageUrl = `${item.collectible.imageRef?.url}/${item.mint}.png`;
-                  const displayName = getLocalizedString(item.collectible.name, language);
-
-                  return (
-                    <div key={item.userCollectibleId} className="aspect-square w-full">
-                      <Card className="w-full h-full overflow-hidden rounded-full shadow-lg p-2">
-                        <div className="relative w-full h-full">
-                          <CollectibleImage
-                            src={imageUrl}
-                            fallbackSrc="/images/ubuLion.jpg"
-                            alt={`${displayName} - Mint #${item.mint}`}
-                            fill
-                            style={{ objectFit: 'cover' }}
-                            className="bg-muted rounded-full"
-                          />
+              // Conditionally render based on the isMobile boolean
+              isMobile ? (
+                // --- MOBILE VIEW: CAROUSEL ---
+                <Carousel className="w-full max-w-xs mx-auto" opts={{align: "start",loop: true,}} plugins={[Autoplay({delay: 8000,})]}>
+                  <CarouselContent>
+                    {/* Group purchases into pairs for the carousel */}
+                    {recentPurchases.map((item, index) => (
+                      <CarouselItem key={index}>
+                        <div className="flex justify-center items-center gap-4">
+                            <div key={item.userCollectibleId} className="aspect-square w-1/2">
+                               <Card className="w-full h-full overflow-hidden rounded-full shadow-lg p-2">
+                                  <div className="relative w-full h-full">
+                                    <CollectibleImage
+                                      src={`${item.collectible.imageRef?.url}/${item.mint}.png`}
+                                      fallbackSrc="/images/ubuLion.jpg"
+                                      alt={getLocalizedString(item.collectible.name, language)}
+                                      fill
+                                      style={{ objectFit: 'cover' }}
+                                      className="bg-muted rounded-full"
+                                    />
+                                  </div>
+                                </Card>
+                            </div>
                         </div>
-                      </Card>
-                    </div>
-                  );
-                })}
-              </div>
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                  <CarouselPrevious className="absolute left-[-1rem] top-1/2 -translate-y-1/2 z-10" />
+                  <CarouselNext className="absolute right-[-1rem] top-1/2 -translate-y-1/2 z-10" />
+                </Carousel>
+              ) : (
+                // --- DESKTOP VIEW: GRID ---
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 md:gap-6">
+                  {recentPurchases.map(item => {
+                    const imageUrl = `${item.collectible.imageRef?.url}/${item.mint}.png`;
+                    const displayName = getLocalizedString(item.collectible.name, language);
+
+                    return (
+                      <div key={item.userCollectibleId} className="aspect-square w-full">
+                        <Card className="w-full h-full overflow-hidden rounded-full shadow-lg p-2">
+                          <div className="relative w-full h-full">
+                            <CollectibleImage
+                              src={imageUrl}
+                              fallbackSrc="/images/ubuLion.jpg"
+                              alt={`${displayName} - Mint #${item.mint}`}
+                              fill
+                              style={{ objectFit: 'cover' }}
+                              className="bg-muted rounded-full"
+                            />
+                          </div>
+                        </Card>
+                      </div>
+                    );
+                  })}
+                </div>
+              )
             ) : (
               <p className="text-center text-muted-foreground">No recent purchases to display right now.</p>
             )}
