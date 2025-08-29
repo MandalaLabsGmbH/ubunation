@@ -10,9 +10,9 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
+  CarouselDots,
 } from "@/components/ui/carousel"
+import Autoplay from "embla-carousel-autoplay"
 
 
 // Define the types for the props, matching the multilingual structure
@@ -76,7 +76,7 @@ export default function HomePageClient({ featuredCollectibles, featuredCollectio
         <section className="w-full py-12 md:py-20 bg-zinc-50 dark:bg-zinc-900">
           {/* FIX: Added 'relative' to this container to position the buttons correctly */}
           <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
-            <Carousel className="w-full">
+            <Carousel className="w-full" opts={{align: "start",loop: true,}} plugins={[Autoplay({delay: 12000,})]}>
               <CarouselContent>
                 {featuredCollections.map(collection => (
                   <CarouselItem key={collection.collectionId}>
@@ -110,8 +110,7 @@ export default function HomePageClient({ featuredCollectibles, featuredCollectio
                   </CarouselItem>
                 ))}
               </CarouselContent>
-              <CarouselPrevious className="hidden md:flex absolute left-[-1rem] top-1/2 -translate-y-1/2 z-20" />
-              <CarouselNext className="hidden md:flex absolute right-[-1rem] top-1/2 -translate-y-1/2 z-20" />
+              <CarouselDots />,
             </Carousel>
           </div>
         </section>
