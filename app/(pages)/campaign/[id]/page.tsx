@@ -1,8 +1,8 @@
 import CampaignTemplate from '@/app/components/CampaignTemplate';
 import { notFound } from 'next/navigation';
-import { headers } from 'next/headers';
+import axios from 'axios';
 
-// Define a type for a single collectible, reflecting your specific data structure
+// --- Type Definitions for API Data ---
 interface Collectible {
   collectibleId: number;
   name: { en: string; de: string; };
@@ -14,39 +14,32 @@ interface Collectible {
   price?: { base: string };
 }
 
-// The Fix: Both 'params' and 'searchParams' must be typed as Promises
-// to match the requirements of newer Next.js versions for async pages.
+// --- Type Definition for Page Props ---
+// This type correctly defines `params` as a Promise, which matches what your build environment expects.
 type CampaignPageProps = {
   params: Promise<{ id: string }>;
-  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
-// This function now calls our new, dedicated API route
+// --- Server-Side Data Fetching Function ---
 async function getCollectible(id: string): Promise<Collectible | null> {
     try {
-        const res = await fetch(`${process.env.NEXTAUTH_URL}/api/db/collectible?collectibleId=${id}`, {
-            headers: new Headers(await headers()),
-            cache: 'no-store'
+        const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/Collectible/getCollectibleByCollectibleId`, {
+            params: { collectibleId: id }
         });
-
-        if (!res.ok) {
-            console.error(`Failed to fetch collectible ${id}:`, await res.text());
-            return null;
-        }
-        return res.json();
+        return res.data;
     } catch (error) {
         console.error("Error fetching collectible:", error);
         return null;
     }
 }
 
-// Apply the new type and await the params inside the function.
+// --- Main Page Component ---
 export default async function CampaignPage({ params }: CampaignPageProps) {
     // Await the params Promise to get the actual ID.
     const { id } = await params;
     const collectible = await getCollectible(id);
 
-    // Ensure the collectible and its essential, language-specific fields exist
+    // Ensure the collectible and its essential fields exist
     if (!collectible || !collectible.imageRef?.img || !collectible.name?.en) {
         notFound();
     }
@@ -56,3 +49,4 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
         <CampaignTemplate collectible={collectible} />
     );
 }
+

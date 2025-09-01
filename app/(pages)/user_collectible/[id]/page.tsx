@@ -1,12 +1,16 @@
 import UserCollectibleTemplate from '@/app/components/user/userCollectible/UserCollectibleTemplate';
-import { notFound } from 'next/navigation';
-import { headers } from 'next/headers';
+import { notFound, redirect } from 'next/navigation';
+import axios from 'axios';
+import { getServerSession, Session } from 'next-auth'; // Import the Session type
+import { authOptions } from '@/lib/auth';
 
-// Define a type for the combined data we expect from our new API route
+// --- Type Definitions for API Data ---
 interface UserCollectibleDetails {
   userCollectible: {
     mint: number;
     userCollectibleId: number;
+    collectibleId: number;
+    ownerId: number;
   };
   collectible: {
     collectibleId: number;
@@ -20,44 +24,78 @@ interface UserCollectibleDetails {
   };
 }
 
-// The Fix: Both 'params' and 'searchParams' are now correctly typed as Promises.
+// --- Type Definition for Page Props ---
 type PageProps = {
   params: Promise<{ id: string }>;
-  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
-// This function now calls our new, dedicated API route
-async function getDetails(id: string): Promise<UserCollectibleDetails | null> {
+// --- Custom Session Type Definition ---
+// Extend the default Session type to include the custom idToken property.
+interface SessionWithToken extends Session {
+  idToken?: string;
+}
+
+// --- Server-Side Data Fetching Function ---
+async function getDetails(id: string, token: string | undefined): Promise<UserCollectibleDetails | null> {
+    if (!token) {
+        console.error("No auth token provided for getDetails");
+        return null;
+    }
     try {
-        const res = await fetch(`${process.env.NEXTAUTH_URL}/api/db/userCollectibleDetails?id=${id}`, {
-            headers: new Headers(await headers()),
-            cache: 'no-store'
+        const authHeader = { 'Authorization': `Bearer ${token}` };
+
+        const userCollectibleResponse = await axios.get<UserCollectibleDetails['userCollectible'][]>(`${process.env.NEXT_PUBLIC_API_BASE_URL}/UserCollectible/getUserCollectibleByUserCollectibleId`, {
+            params: { userCollectibleId: id },
+            headers: authHeader
         });
 
-        if (!res.ok) {
-            console.error(`Failed to fetch details for user collectible ${id}:`, await res.text());
-            return null;
+        const userCollectible = userCollectibleResponse.data[0];
+        if (!userCollectible) {
+            throw new Error('User collectible not found');
         }
-        return res.json();
+
+        const [collectibleResponse, ownerResponse] = await Promise.all([
+            axios.get<UserCollectibleDetails['collectible']>(`${process.env.NEXT_PUBLIC_API_BASE_URL}/Collectible/getCollectibleByCollectibleId`, {
+                params: { collectibleId: userCollectible.collectibleId },
+                headers: authHeader
+            }),
+            axios.get<UserCollectibleDetails['owner']>(`${process.env.NEXT_PUBLIC_API_BASE_URL}/User/getUserByUserId`, {
+                params: { userId: userCollectible.ownerId },
+                headers: authHeader
+            })
+        ]);
+
+        return {
+            userCollectible: userCollectible,
+            collectible: collectibleResponse.data,
+            owner: ownerResponse.data
+        };
+
     } catch (error) {
         console.error("Error fetching user collectible details:", error);
         return null;
     }
 }
 
-// Apply the new type and await the params inside the function.
+// --- Main Page Component ---
 export default async function UserCollectiblePage({ params }: PageProps) {
-    // Await the params Promise to get the actual ID.
-    const { id } = await params;
-    const details = await getDetails(id);
+    // Cast the session to our custom type to make TypeScript aware of idToken.
+    const session = await getServerSession(authOptions) as SessionWithToken | null;
+    
+    if (!session) {
+        redirect('/');
+    }
 
-    // Ensure all necessary data was fetched successfully
+    const { id } = await params;
+    // Now we can safely access session.idToken without a TypeScript error.
+    const details = await getDetails(id, session.idToken);
+
     if (!details || !details.collectible || !details.userCollectible || !details.owner) {
         notFound();
     }
 
-    // Pass the entire 'details' object as a single prop
     return (
         <UserCollectibleTemplate details={details} />
     );
 }
+

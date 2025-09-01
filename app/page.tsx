@@ -1,7 +1,9 @@
-import { headers } from 'next/headers';
-import HomePageClient from '@/app/components/HomePageClient';
+// app/page.tsx
 
-// Define the type for a single collectible with multilingual name and description
+import HomePageClient from '@/app/components/HomePageClient';
+import axios from 'axios';
+
+// Define the types for your data
 interface Collectible {
   collectibleId: number;
   name: { en: string; de: string; };
@@ -22,7 +24,11 @@ interface Collection {
   };
 }
 
-// Define the type for the new recently purchased data
+interface UserCollectible {
+  userCollectibleId: number;
+  collectibleId: number;
+};
+
 interface RecentPurchase {
   mint: number;
   userCollectibleId: number;
@@ -35,27 +41,12 @@ interface RecentPurchase {
   };
 }
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 async function getAllCollectibles(): Promise<Collectible[]> {
   try {
-    const requestHeaders = await headers();
-    const cookie = requestHeaders.get('cookie');
-    const apiHeaders = new Headers();
-    if (cookie) {
-      apiHeaders.append('Cookie', cookie);
-    }
-    
-    const response = await fetch(`${process.env.NEXTAUTH_URL}/api/db/collectible`, {
-      method: 'GET',
-      headers: apiHeaders,
-      cache: 'no-store'
-    });
-
-    if (!response.ok) {
-      console.error(`Failed to fetch all collectibles:`, await response.text());
-      return [];
-    }
-    const data = await response.json();
-    return Array.isArray(data) ? data : [];
+    const response = await axios.get(`${API_BASE_URL}/Collectible/getAllCollectibles`);
+    return Array.isArray(response.data) ? response.data : [];
   } catch (error) {
     console.error(`Error in getAllCollectibles:`, error);
     return [];
@@ -64,27 +55,10 @@ async function getAllCollectibles(): Promise<Collectible[]> {
 
 async function getAllCollections(): Promise<Collection[]> {
   try {
-    const requestHeaders = await headers();
-    const cookie = requestHeaders.get('cookie');
-    const apiHeaders = new Headers();
-    if (cookie) {
-      apiHeaders.append('Cookie', cookie);
-    }
-    
-    const response = await fetch(`${process.env.NEXTAUTH_URL}/api/db/collection?limit=2`, {
-      method: 'GET',
-      headers: apiHeaders,
-      cache: 'no-store'
+    const response = await axios.get(`${API_BASE_URL}/Collection/getAllCollections`, {
+      params: { limit: 2 }
     });
-
-    if (!response.ok) {
-      console.error(`Failed to fetch all collections:`, await response.text());
-      return [];
-    }
-    const data = await response.json();
-    console.log("HERE IS DAATA");
-    console.log(data);
-    return Array.isArray(data) ? data : [];
+    return Array.isArray(response.data) ? response.data : [];
   } catch (error) {
     console.error(`Error in getAllCollections:`, error);
     return [];
@@ -92,25 +66,43 @@ async function getAllCollections(): Promise<Collection[]> {
 }
 
 async function getRecentPurchases(): Promise<RecentPurchase[]> {
-  try {
-    const response = await fetch(`${process.env.NEXTAUTH_URL}/api/db/userCollectible?getMostRecent=true`, {
-      method: 'GET',
-      cache: 'no-store' // Ensure we always get the latest data
-    });
+    try {
+        const response = await axios.get(`${API_BASE_URL}/UserCollectible/getUserCollectiblesByLastOwned`, {
+            params: {
+                start_date: new Date().toISOString(),
+                limit: 5,
+            }
+        });
 
-    if (!response.ok) {
-      console.error(`Failed to fetch recent purchases:`, await response.text());
-      return [];
+        const recentUserCollectibles = response.data;
+        if (!recentUserCollectibles || recentUserCollectibles.length === 0) {
+            return [];
+        }
+
+        const enrichedCollectibles = await Promise.all(
+            recentUserCollectibles.map(async (userCollectible: UserCollectible) => {
+                try {
+                    const collectibleResponse = await axios.get(`${API_BASE_URL}/Collectible/getCollectibleByCollectibleId`, {
+                        params: { collectibleId: userCollectible.collectibleId }
+                    });
+                    return { ...userCollectible, collectible: collectibleResponse.data };
+                } catch (enrichError) {
+                    console.error(`Failed to enrich recent userCollectible ${userCollectible.userCollectibleId}:`, enrichError);
+                    return null;
+                }
+            })
+        );
+
+        return enrichedCollectibles.filter(item => item !== null);
+
+    } catch (error) {
+        console.error(`Error in getRecentPurchases:`, error);
+        return [];
     }
-    return response.json();
-  } catch (error) {
-    console.error(`Error in getRecentPurchases:`, error);
-    return [];
-  }
 }
 
+
 export default async function UBUNΛTIONRootPage() {
-  // Fetch all data in parallel for better performance
   const [
     allCollectibles,
     allCollections,
@@ -124,7 +116,7 @@ export default async function UBUNΛTIONRootPage() {
   const featuredCollections = allCollections;
 
   return (
-    <HomePageClient 
+    <HomePageClient
       featuredCollectibles={featuredCollectibles}
       featuredCollections={featuredCollections}
       recentPurchases={recentPurchases}
