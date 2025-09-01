@@ -15,6 +15,8 @@ import { submitUserCollectible } from '@/app/_helpers/apiHelpers';
 import { AuthErrors, AuthError } from '@/app/_helpers/authErrors';
 import { AuthModalView } from '@/app/contexts/AuthModalContext';
 
+export type AuthMode = AuthModalView;
+
 export function useAuthForm(onSuccess: () => void) {
     const [mode, setMode] = useState<AuthModalView>('login-email');
     

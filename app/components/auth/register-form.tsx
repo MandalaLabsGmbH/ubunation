@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2 } from 'lucide-react';
 import { AuthError } from '@/app/_helpers/authErrors';
-import { AuthMode } from '@/app/features/auth/hooks/useAuthForm';
+import { AuthMode } from '@/app/hooks/useAuthForm';
 
 interface RegisterFormProps {
     onSubmit: (e: FormEvent<HTMLFormElement>) => void;
