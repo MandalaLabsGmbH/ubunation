@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
 
         // This assumes you have a backend endpoint that can get user data by ID.
         // You would create a new endpoint on your backend that only returns public data.
-        const userResponse = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/User/getUserByUserId`, {
+        const userResponse = await axios.get(`${NEXT_PUBLIC_API_BASE_URL}/User/getPublicUserByUserId`, {
             params: { userId },
         });
 
@@ -22,8 +22,8 @@ export async function GET(request: NextRequest) {
 
         // We will only return a subset of the user's data to the client.
         const publicProfile = {
+            userId: userData.userId || 0,
             username: userData.username || 'Unknown',
-            score: userData.score || 0, // Assuming a 'score' field exists
             profilePictureUrl: userData.profileImg || '/images/ubuLion.png' // Assuming a profile picture URL
         };
 

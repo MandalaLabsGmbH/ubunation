@@ -1,8 +1,10 @@
 import UserCollectibleTemplate from '@/app/components/user/userCollectible/UserCollectibleTemplate';
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import axios from 'axios';
-import { getServerSession, Session } from 'next-auth'; // Import the Session type
+import { getServerSession, Session } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { User } from '@/app/contexts/UserContext';
+import type { Metadata } from 'next';
 
 // --- Type Definitions for API Data ---
 interface UserCollectibleDetails {
@@ -26,27 +28,21 @@ interface UserCollectibleDetails {
 
 // --- Type Definition for Page Props ---
 type PageProps = {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 };
 
 // --- Custom Session Type Definition ---
-// Extend the default Session type to include the custom idToken property.
 interface SessionWithToken extends Session {
   idToken?: string;
 }
 
 // --- Server-Side Data Fetching Function ---
-async function getDetails(id: string, token: string | undefined): Promise<UserCollectibleDetails | null> {
-    if (!token) {
-        console.error("No auth token provided for getDetails");
-        return null;
-    }
+async function getDetails(id: string, session: SessionWithToken | null): Promise<UserCollectibleDetails | null> {
     try {
-        const authHeader = { 'Authorization': `Bearer ${token}` };
+        const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-        const userCollectibleResponse = await axios.get<UserCollectibleDetails['userCollectible'][]>(`${process.env.NEXT_PUBLIC_API_BASE_URL}/UserCollectible/getUserCollectibleByUserCollectibleId`, {
-            params: { userCollectibleId: id },
-            headers: authHeader
+        const userCollectibleResponse = await axios.get<UserCollectibleDetails['userCollectible'][]>(`${API_BASE_URL}/UserCollectible/getUserCollectibleByUserCollectibleId`, {
+            params: { userCollectibleId: id }
         });
 
         const userCollectible = userCollectibleResponse.data[0];
@@ -54,16 +50,21 @@ async function getDetails(id: string, token: string | undefined): Promise<UserCo
             throw new Error('User collectible not found');
         }
 
-        const [collectibleResponse, ownerResponse] = await Promise.all([
-            axios.get<UserCollectibleDetails['collectible']>(`${process.env.NEXT_PUBLIC_API_BASE_URL}/Collectible/getCollectibleByCollectibleId`, {
-                params: { collectibleId: userCollectible.collectibleId },
-                headers: authHeader
-            }),
-            axios.get<UserCollectibleDetails['owner']>(`${process.env.NEXT_PUBLIC_API_BASE_URL}/User/getUserByUserId`, {
+        const collectibleResponse = await axios.get<UserCollectibleDetails['collectible']>(`${API_BASE_URL}/Collectible/getCollectibleByCollectibleId`, {
+            params: { collectibleId: userCollectible.collectibleId }
+        });
+
+        let ownerResponse;
+        if (session?.idToken) {
+            ownerResponse = await axios.get<UserCollectibleDetails['owner']>(`${API_BASE_URL}/User/getUserByUserId`, {
                 params: { userId: userCollectible.ownerId },
-                headers: authHeader
-            })
-        ]);
+                headers: { 'Authorization': `Bearer ${session.idToken}` }
+            });
+        } else {
+            ownerResponse = await axios.get<UserCollectibleDetails['owner']>(`${API_BASE_URL}/User/getPublicUserByUserId`, {
+                params: { userId: userCollectible.ownerId },
+            });
+        }
 
         return {
             userCollectible: userCollectible,
@@ -77,25 +78,80 @@ async function getDetails(id: string, token: string | undefined): Promise<UserCo
     }
 }
 
+// --- Dynamic Metadata Generation ---
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const metaDataParams = await params;
+  const details = await getDetails(metaDataParams.id, null);
+
+  if (!details) {
+    return {
+      title: 'Collectible Not Found'
+    };
+  }
+  
+  const { collectible, userCollectible } = details;
+  const title = `${collectible.name.en} #${userCollectible.mint}`;
+  const description = "I just donated to Ubunation and received this artwork. Come check it out!";
+  const imageUrl = `${collectible.imageRef?.url}/${userCollectible.mint}.png`;
+  const pageUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/user_collectible/${metaDataParams.id}`;
+
+  return {
+    title: title,
+    description: description,
+    openGraph: {
+      title: title,
+      description: description,
+      url: pageUrl,
+      images: [
+        {
+          url: imageUrl,
+          width: 800,
+          height: 800,
+          alt: title,
+        },
+      ],
+      type: 'website',
+    },
+     twitter: {
+        card: 'summary_large_image',
+        title: title,
+        description: description,
+        images: [imageUrl],
+    },
+  };
+}
+
+
+
 // --- Main Page Component ---
 export default async function UserCollectiblePage({ params }: PageProps) {
-    // Cast the session to our custom type to make TypeScript aware of idToken.
     const session = await getServerSession(authOptions) as SessionWithToken | null;
-    
-    if (!session) {
-        redirect('/');
-    }
-
     const { id } = await params;
-    // Now we can safely access session.idToken without a TypeScript error.
-    const details = await getDetails(id, session.idToken);
+    const details = await getDetails(id, session);
 
     if (!details || !details.collectible || !details.userCollectible || !details.owner) {
         notFound();
     }
 
+    let isOwner = false;
+    if (session?.user?.email && session.idToken) {
+        try {
+            const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+            const userResponse = await axios.get<User>(`${API_BASE_URL}/User/getUserByEmail`, {
+                params: { email: session.user.email },
+                headers: { 'Authorization': `Bearer ${session.idToken}` }
+            });
+            const currentUserId = userResponse.data.userId;
+            if (currentUserId && details.owner.userId === currentUserId) {
+                isOwner = true;
+            }
+        } catch (error) {
+            console.error("Could not determine ownership:", error);
+        }
+    }
+
     return (
-        <UserCollectibleTemplate details={details} />
+        <UserCollectibleTemplate details={details} isOwner={isOwner} />
     );
 }
 
