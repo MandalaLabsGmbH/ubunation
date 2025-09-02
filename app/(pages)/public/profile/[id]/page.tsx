@@ -2,39 +2,25 @@ import { getServerSession, Session } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import PublicProfilePageClient from "@/app/components/user/profile/PublicProfilePageClient";
 import axios from 'axios';
+import { User } from "@/app/contexts/UserContext";
 
-// --- Type Definitions ---
+// --- Type Definitions for API Data ---
 
-interface User {
-    userId?: number;
-    username?: string;
-    email: string;
-    userType: 'onboarding' | 'email' | 'unregistered' | 'username' | 'admin';
-    authData?: {
-        firstName?: string;
-        lastName?: string;
-        country?: string;
-        newsletter?: '1' | '0';
-    };
-}
-
+// Represents the public-facing user data
 interface PublicUser {
     userId: number;
     username: string;
-    profilePictureUrl: string;
+    profilePictureUrl: string; // From profileImg or a default
 }
 
+// Represents the basic collectible data
 interface Collectible {
     collectibleId: number;
     name: { en: string; de: string; };
-    description: { en: string; de: string; };
-    imageRef: {
-        url: string;
-        img?: string;
-     };
-    price?: { base: string };
+    imageRef: { url: string; };
 }
 
+// Represents a user's specific instance of a collectible
 interface UserCollectible {
     userCollectibleId: number;
     collectibleId: number;
@@ -43,13 +29,25 @@ interface UserCollectible {
     createdDt: string;
 }
 
-interface EnrichedUserCollectible extends UserCollectible {
+// Represents the final, combined data structure passed to the client component
+interface EnrichedUserCollectible {
+    userCollectibleId: number;
+    mint: number;
+    createdDt: string;
     collectible: Collectible;
 }
 
+// --- Type Definition for Page Props ---
+type PageProps = {
+  params: { id: string };
+};
+
+// --- Custom Session Type Definition ---
+// FIX: Extend the default Session type to include the custom idToken property.
 interface SessionWithToken extends Session {
   idToken?: string;
 }
+
 
 // --- Server-Side Data Fetching Functions ---
 
@@ -76,7 +74,10 @@ async function getUserCollectibles(userId: number): Promise<EnrichedUserCollecti
             params: { ownerId: userId },
         });
         const userCollectibles = userCollectiblesResponse.data;
-        if (!userCollectibles || userCollectibles.length === 0) return [];
+
+        if (!userCollectibles || userCollectibles.length === 0) {
+            return [];
+        }
 
         const enrichedItems = await Promise.all(
             userCollectibles.map(async (item) => {
@@ -84,15 +85,18 @@ async function getUserCollectibles(userId: number): Promise<EnrichedUserCollecti
                     const collectibleRes = await axios.get<Collectible>(`${API_BASE_URL}/Collectible/getCollectibleByCollectibleId`, {
                         params: { collectibleId: item.collectibleId },
                     });
-                    
+
                     if (!collectibleRes.data) return null;
 
                     return {
-                        ...item,
+                        userCollectibleId: item.userCollectibleId,
+                        mint: item.mint,
+                        createdDt: item.createdDt,
                         collectible: collectibleRes.data,
                     };
+
                 } catch (enrichError) {
-                    console.error(`Failed to enrich user collectible ${item.userCollectibleId}:`, enrichError);
+                    console.error(`Failed to enrich user collectible item ${item.userCollectibleId}:`, enrichError);
                     return null;
                 }
             })
@@ -106,11 +110,13 @@ async function getUserCollectibles(userId: number): Promise<EnrichedUserCollecti
     }
 }
 
+
 // --- Main Page Component ---
 
-export default async function PublicProfilePage({ params }: { params: { id: string } }) {
+export default async function PublicProfilePage({ params }: PageProps) {
+    // FIX: Cast the session to our custom type to make TypeScript aware of idToken.
     const session = await getServerSession(authOptions) as SessionWithToken | null;
-    const { id } = params;
+    const { id } = await params;
 
     const publicUser = await getPublicUser(id);
 
@@ -120,28 +126,31 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
 
     const allUserCollectibles = await getUserCollectibles(publicUser.userId);
 
-    const sortedCollectibles = allUserCollectibles.sort((a, b) => {
+    const sortedItems = allUserCollectibles.sort((a, b) => {
         const dateA = new Date(a.createdDt).getTime();
         const dateB = new Date(b.createdDt).getTime();
-        return dateB - dateA;
+        return dateB - dateA; // Sort descending (most recent first)
     });
 
-    const mostRecentCollectible = sortedCollectibles.length > 0 ? sortedCollectibles[0] : null;
-    const recentCollectibles = sortedCollectibles.slice(0, 4);
+    const mostRecentCollectible = sortedItems.length > 0 ? sortedItems[0] : null;
+    const recentCollectibles = sortedItems.slice(0, 4);
     
     let isCurrentUser = false;
     if (session?.user?.email && session.idToken) {
         try {
-            const currentUser = (await axios.get<User>(`${API_BASE_URL}/User/getUserByEmail`, {
+            const userResponse = await axios.get<User>(`${API_BASE_URL}/User/getUserByEmail`, {
                 params: { email: session.user.email },
                 headers: { 'Authorization': `Bearer ${session.idToken}` }
-            })).data;
-            isCurrentUser = currentUser.userId === publicUser.userId;
+            });
+            const currentUserId = userResponse.data.userId;
+            if (currentUserId && publicUser.userId === currentUserId) {
+                isCurrentUser = true;
+            }
         } catch (error) {
-            console.error("Could not verify current user:", error);
+            // This is not a critical error, so we can just log it.
+            console.error("Could not determine if the viewer is the current user:", error);
         }
     }
-
 
     return (
         <PublicProfilePageClient
