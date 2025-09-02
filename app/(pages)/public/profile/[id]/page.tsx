@@ -38,12 +38,12 @@ interface EnrichedUserCollectible {
 }
 
 // --- Type Definition for Page Props ---
+// FIX: The build error indicates that 'params' is a Promise for this page.
 type PageProps = {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 };
 
 // --- Custom Session Type Definition ---
-// FIX: Extend the default Session type to include the custom idToken property.
 interface SessionWithToken extends Session {
   idToken?: string;
 }
@@ -114,8 +114,8 @@ async function getUserCollectibles(userId: number): Promise<EnrichedUserCollecti
 // --- Main Page Component ---
 
 export default async function PublicProfilePage({ params }: PageProps) {
-    // FIX: Cast the session to our custom type to make TypeScript aware of idToken.
     const session = await getServerSession(authOptions) as SessionWithToken | null;
+    // FIX: Await the params Promise to get the actual ID.
     const { id } = await params;
 
     const publicUser = await getPublicUser(id);

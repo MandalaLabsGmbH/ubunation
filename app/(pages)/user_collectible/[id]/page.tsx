@@ -27,8 +27,9 @@ interface UserCollectibleDetails {
 }
 
 // --- Type Definition for Page Props ---
+// FIX: The build error indicates that 'params' is a Promise for this page.
 type PageProps = {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 };
 
 // --- Custom Session Type Definition ---
@@ -80,8 +81,9 @@ async function getDetails(id: string, session: SessionWithToken | null): Promise
 
 // --- Dynamic Metadata Generation ---
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const metaDataParams = await params;
-  const details = await getDetails(metaDataParams.id, null);
+  // Await the params promise to get the id
+  const { id } = await params;
+  const details = await getDetails(id, null);
 
   if (!details) {
     return {
@@ -93,7 +95,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const title = `${collectible.name.en} #${userCollectible.mint}`;
   const description = "I just donated to Ubunation and received this artwork. Come check it out!";
   const imageUrl = `${collectible.imageRef?.url}/${userCollectible.mint}.png`;
-  const pageUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/user_collectible/${metaDataParams.id}`;
+  const pageUrl = process.env.NEXT_PUBLIC_BASE_URL
+    ? `${process.env.NEXT_PUBLIC_BASE_URL}/user_collectible/${id}`
+    : '';
+
 
   return {
     title: title,
@@ -122,10 +127,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 
-
 // --- Main Page Component ---
 export default async function UserCollectiblePage({ params }: PageProps) {
     const session = await getServerSession(authOptions) as SessionWithToken | null;
+    // FIX: Await the params Promise to get the actual ID.
     const { id } = await params;
     const details = await getDetails(id, session);
 
