@@ -306,11 +306,6 @@ export default function HomePageClient() {
                                 />
                               </div>
                             </Card>
-                            {item.username && (
-                               <Link href={`/public/profile/${item.ownerId}`} className="hover:underline">
-                                <p className="text-center text-sm font-semibold mt-2 truncate">{item.username}</p>
-                               </Link>
-                            )}
                           </div>
                         </CarouselItem>
                       ))}
@@ -326,23 +321,25 @@ export default function HomePageClient() {
 
                       return (
                         <div key={item.userCollectibleId} className="text-center">
-                          <Card className="aspect-square w-full overflow-hidden rounded-full shadow-lg p-2">
-                            <div className="relative w-full h-full">
-                              <CollectibleImage
-                                src={imageUrl}
-                                fallbackSrc="/images/ubuLion.jpg"
-                                alt={`${displayName} - Mint #${item.mint}`}
-                                fill
-                                style={{ objectFit: 'cover' }}
-                                className="bg-muted rounded-full"
-                              />
-                            </div>
+                          <Card className="bg-card pl-2 pr-2 py-5 flex flex-col shadow-lg h-full">
+                            <Card className="aspect-square w-full overflow-hidden rounded-full shadow-lg p-2">
+                              <div className="relative w-full h-full">
+                                <CollectibleImage
+                                  src={imageUrl}
+                                  fallbackSrc="/images/ubuLion.jpg"
+                                  alt={`${displayName} - Mint #${item.mint}`}
+                                  fill
+                                  style={{ objectFit: 'cover' }}
+                                  className="bg-muted rounded-full"
+                                />
+                              </div>
+                            </Card>
+                            {item.username && (
+                               <Link href={`/public/profile/${item.ownerId}`} className="hover:underline">
+                                <p className="text-center text-sm font-semibold mt-2 truncate">{item.username}</p>
+                               </Link>
+                            )}
                           </Card>
-                          {item.username && (
-                             <Link href={`/public/profile/${item.ownerId}`} className="hover:underline">
-                              <p className="font-semibold mt-2 truncate">{item.username}</p>
-                             </Link>
-                          )}
                         </div>
                       );
                     })}
