@@ -15,8 +15,9 @@ interface Collectible {
   price?: { base: string };
 }
 
+// FIX 1: Update the type for params to be a Promise
 type CampaignPageProps = {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 };
 
 // --- Data Fetching Function (no change) ---
@@ -80,7 +81,8 @@ async function CampaignData({ id }: { id: string }) {
 
 // --- Main Page Component (now using Suspense) ---
 export default async function CampaignPage({ params }: CampaignPageProps) {
-    const { id } = params;
+    // FIX 2: Use 'await' to resolve the params Promise
+    const { id } = await params;
     return (
         <Suspense fallback={<CampaignPageSkeleton />}>
             <CampaignData id={id} />

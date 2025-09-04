@@ -5,12 +5,13 @@ import axios from 'axios';
 import { User } from "@/app/contexts/UserContext";
 import { Suspense } from "react";
 
-// --- Type Definitions (no change) ---
+// --- Type Definitions ---
 interface PublicUser { userId: number; username: string; profilePictureUrl: string; }
 interface Collectible { collectibleId: number; name: { en: string; de: string; }; imageRef: { url: string; }; }
 interface UserCollectible { userCollectibleId: number; collectibleId: number; ownerId: number; mint: number; createdDt: string; }
 interface EnrichedUserCollectible { userCollectibleId: number; mint: number; createdDt: string; collectible: Collectible; }
-type PageProps = { params: { id: string }; };
+// FIX 1: Update the type for params to be a Promise
+type PageProps = { params: Promise<{ id: string }>; };
 interface SessionWithToken extends Session { idToken?: string; }
 
 // --- Data Fetching Functions (no change) ---
@@ -116,7 +117,8 @@ async function PublicProfileData({ id }: { id: string }) {
 
 // --- Main Page Component (now using Suspense) ---
 export default async function PublicProfilePage({ params }: PageProps) {
-    const { id } = params;
+    // FIX 2: Use 'await' to resolve the params Promise
+    const { id } = await params;
     return (
         <Suspense fallback={<PublicProfilePageSkeleton />}>
             <PublicProfileData id={id} />

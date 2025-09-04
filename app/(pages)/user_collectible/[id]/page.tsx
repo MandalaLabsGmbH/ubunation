@@ -7,13 +7,14 @@ import { User } from '@/app/contexts/UserContext';
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 
-// --- Type Definitions (no change) ---
+// --- Type Definitions ---
 interface UserCollectibleDetails {
   userCollectible: { mint: number; userCollectibleId: number; collectibleId: number; ownerId: number; };
   collectible: { collectibleId: number; name: { en: string; de: string; }; description: { en: string; de: string; }; imageRef?: { url: string; }; };
   owner: { userId: number; username?: string; };
 }
-type PageProps = { params: { id: string }; };
+// FIX 1: Update the type for params to be a Promise
+type PageProps = { params: Promise<{ id: string }>; };
 interface SessionWithToken extends Session { idToken?: string; }
 
 // --- Data Fetching Function (no change) ---
@@ -37,9 +38,9 @@ async function getDetails(id: string, session: SessionWithToken | null): Promise
     }
 }
 
-// --- Dynamic Metadata (no change) ---
+// --- Dynamic Metadata ---
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { id } = params;
+  const { id } = await params;
   const details = await getDetails(id, null);
   if (!details) { return { title: 'Collectible Not Found' }; }
   const { collectible, userCollectible } = details;
@@ -111,7 +112,8 @@ async function UserCollectibleData({ id }: { id: string }) {
 
 // --- Main Page Component (now using Suspense) ---
 export default async function UserCollectiblePage({ params }: PageProps) {
-    const { id } = params;
+    // FIX 2: Use 'await' to resolve the params Promise
+    const { id } = await params;
     return (
         <Suspense fallback={<UserCollectiblePageSkeleton />}>
             <UserCollectibleData id={id} />
