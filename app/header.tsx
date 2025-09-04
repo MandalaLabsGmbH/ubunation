@@ -84,7 +84,9 @@ export default function Header() {
             )}
           </button>
           
-          <LanguageSelector />
+          <div className="hidden md:block">
+            <LanguageSelector />
+          </div>
 
           {/* Theme toggle is visible on desktop here */}
           <div className="hidden md:block">
@@ -121,7 +123,11 @@ export default function Header() {
                   </DropdownMenuItem>
                 ))}
                 <DropdownMenuSeparator />
-                {/* Theming is an item inside the mobile menu */}
+                {/* Language and Theming is an item inside the mobile menu */}
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="flex justify-between">
+                  <span>Language</span>
+                  <LanguageSelector />
+                </DropdownMenuItem>
                 <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="flex justify-between">
                   <span>Theme</span>
                   <ThemeToggleButton />
