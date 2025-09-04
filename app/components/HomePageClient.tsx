@@ -88,7 +88,7 @@ export default function HomePageClient({ featuredCollectibles, featuredCollectio
               </div>
         </section>
 
-         {/* --- Hero Section --- */}
+        {/* --- Hero Section --- */}
         <section className="w-full py-12 md:py-20 bg-zinc-50 dark:bg-zinc-900">
           {/* FIX: Added 'relative' to this container to position the buttons correctly */}
           <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
@@ -133,6 +133,42 @@ export default function HomePageClient({ featuredCollectibles, featuredCollectio
               </CarouselContent>
               <CarouselDots />,
             </Carousel>
+          </div>
+        </section>
+
+         {/* --- About Section --- */}
+        <section className="w-full py-12 md:py-20 bg-zinc-50 dark:bg-zinc-900">
+          <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
+                About UBUNɅTION
+              </h2>
+            </div>
+                    <div className="w-full flex flex-col md:flex-row items-center justify-between gap-12 p-1">
+                      <div className="w-full flex flex-col md:flex-row items-center justify-between gap-12 p-1">
+                        <Card key={'hero text'} className="bg-card flex flex-col overflow-hidden shadow-lg">
+                          <div className="py-5 pl-10 pr-10 text-left">
+                            <p className="text-md text-muted-foreground mb-8 leading-relaxed md:text-sm">
+                              Ubunation is dedicated to fostering a sense of community and enhancing social projects worldwide. Our mission is to connect people with the resources they need to make a positive impact in their communities.
+                            </p>
+                            <UserButton label="Learn More" route='https://www.ubunation.com/' type='readMore' isLink={true} />
+                          </div>
+                        </Card>
+                      </div>
+                      {/* Image Content */}
+                        <div className="shrink md:w-1/2 flex justify-center">
+                          <Link href='https://www.ubunation.com/' target='_blank' className="hover:underline">
+                            <Image 
+                              src='/images/ubuLion.jpg' 
+                              alt="About Us"
+                              className="rounded-lg shadow-2xl w-full max-w-md"
+                              width={500}
+                              height={500}
+                            />
+                          </Link>
+                        </div>
+                      {/* Text Content */}
+                    </div>
           </div>
         </section>
 
