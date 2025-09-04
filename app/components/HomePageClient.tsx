@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent } from "@/components/ui/card";
-import UserButton from "@/app/components/UserButton";
+import NonUserButton from "@/app/components/NonUserButton";
 import { useTranslation } from '@/app/hooks/useTranslation';
 import CollectibleImage from './CollectibleImage';
 import { useMediaQuery } from '@/app/hooks/useMediaQuery'
@@ -57,9 +57,10 @@ interface HomePageClientProps {
   featuredCollectibles: Collectible[];
   featuredCollections: Collection[];
   recentPurchases: RecentPurchase[];
+  collectionCollectibleIds: number[];
 }
 
-export default function HomePageClient({ featuredCollectibles, featuredCollections, recentPurchases }: HomePageClientProps) {
+export default function HomePageClient({ featuredCollectibles, featuredCollections, recentPurchases, collectionCollectibleIds }: HomePageClientProps) {
   const { language } = useTranslation();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [api, setApi] = useState<CarouselApi>()
@@ -99,13 +100,13 @@ export default function HomePageClient({ featuredCollectibles, featuredCollectio
             </div>
             <Carousel className="w-full" opts={{align: "start",loop: true,}} plugins={[Autoplay({delay: 12000,})]}>
               <CarouselContent>
-                {featuredCollections.map(collection => (
+                {featuredCollections.map((collection, index) => (
                   <CarouselItem key={collection.collectionId}>
                     <div className="w-full flex flex-col md:flex-row items-center justify-between gap-12 p-1">
                       {/* Image Content */}
                       {collection.imageRef && (
                         <div className="shrink md:w-1/2 flex justify-center">
-                          <Link href={`/campaign/1`} className="hover:underline">
+                          <Link href={`/campaign/${collectionCollectibleIds[index]}`} className="hover:underline">
                             <Image 
                               src={collection.imageRef.img} 
                               alt="hero collection"
@@ -123,7 +124,7 @@ export default function HomePageClient({ featuredCollectibles, featuredCollectio
                             <p className="text-md text-muted-foreground mb-8 leading-relaxed md:text-sm">
                               {collection ? getLocalizedString(collection.description, language).replace(/<[^>]*>?/gm, '').substring(0, 400) + '...' : "Default description..."}
                             </p>
-                            <UserButton label="Learn More" route='/purchase' type='readMore' />
+                            <NonUserButton label="Learn More" route={`/campaign/${collectionCollectibleIds[index]}`} />
                           </div>
                         </Card>
                       </div>
@@ -151,7 +152,7 @@ export default function HomePageClient({ featuredCollectibles, featuredCollectio
                             <p className="text-md text-muted-foreground mb-8 leading-relaxed md:text-sm">
                               Ubunation is dedicated to fostering a sense of community and enhancing social projects worldwide. Our mission is to connect people with the resources they need to make a positive impact in their communities.
                             </p>
-                            <UserButton label="Learn More" route='https://www.ubunation.com/' type='readMore' isLink={true} />
+                            <NonUserButton label="Learn More" route='https://www.ubunation.com/' isLink={true} />
                           </div>
                         </Card>
                       </div>
@@ -182,7 +183,7 @@ export default function HomePageClient({ featuredCollectibles, featuredCollectio
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {featuredCollectibles.map(collectible => (
-                  <Card key={collectible.collectibleId} className="bg-card w-full flex flex-col overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 ease-in-out shadow-lg hover:shadow-2xl">
+                  <Card key={collectible.collectibleId} className="bg-card w-full flex flex-col overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 ease-in-out shadow-lg hover:shadow-xl">
                       {collectible.imageRef && (
                         <Link href={`/campaign/${collectible.collectibleId}`} className="hover:underline">
                             <Image 

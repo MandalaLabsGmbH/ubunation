@@ -8,11 +8,10 @@ import { Button } from '@/components/ui/button'
 interface UserButtonProps {
     label: string;
     route: string;
-    type?: string;
     isLink?: boolean;
 }
 
-export default function UserButton({ label, route, type, isLink }: UserButtonProps) {
+export default function UserButton({ label, route, isLink }: UserButtonProps) {
   const { data: session } = useSession()
   const router = useRouter()
   const { openModal } = useAuthModal()
@@ -32,11 +31,6 @@ export default function UserButton({ label, route, type, isLink }: UserButtonPro
   }
 
   return (
-    type === 'readMore' ?
-    <Button onClick={handleClick} className="w-50 bg-orange-500 hover:bg-orange-600 px-8 py-3 text-med font-semibold shadow-lg transition-transform transform hover:scale-105">
-      {label}
-    </Button>
-    : 
     <Button onClick={handleClick} className="w-full bg-blue-600 hover:bg-blue-700 px-8 py-3 rounded-full text-lg font-semibold shadow-lg transition-transform transform hover:scale-105">
       {label}
     </Button>

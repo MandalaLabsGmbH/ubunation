@@ -65,6 +65,29 @@ async function getAllCollections(): Promise<Collection[]> {
   }
 }
 
+async function getFirstCollectiblesByCollection(limit?: number): Promise<number[]> {
+  try {
+    const collections = await getAllCollections();
+    const collectibleIds: number[] = [];
+    for (const collection of collections) {
+      const response = await axios.get(`${API_BASE_URL}/Collectible/getCollectiblesByCollection`, {
+        params: { collectionId: collection.collectionId }
+      });
+      const collectibles = Array.isArray(response.data) ? response.data : [];
+      if (collectibles.length > 0) {
+        collectibleIds.push(collectibles[0].collectibleId);
+      }
+      if (limit && collectibleIds.length >= limit) {
+        break;
+      }
+    }
+    return collectibleIds;
+  } catch (error) {
+    console.error(`Error in getFirstCollectiblesByCollection:`, error);
+    return [];
+  }
+}
+
 async function getRecentPurchases(): Promise<RecentPurchase[]> {
     try {
         const response = await axios.get(`${API_BASE_URL}/UserCollectible/getUserCollectiblesByLastOwned`, {
@@ -106,13 +129,15 @@ export default async function UBUNΛTIONRootPage() {
   const [
     allCollectibles,
     allCollections,
+    collectionCollectibleIds,
     recentPurchases
   ] = await Promise.all([
     getAllCollectibles(),
     getAllCollections(),
+    getFirstCollectiblesByCollection(2),
     getRecentPurchases()
   ]);
-  const featuredCollectibles = allCollectibles.slice(1, 4);
+  const featuredCollectibles = allCollectibles.slice(0, 3);
   const featuredCollections = allCollections;
 
   return (
@@ -120,6 +145,7 @@ export default async function UBUNΛTIONRootPage() {
       featuredCollectibles={featuredCollectibles}
       featuredCollections={featuredCollections}
       recentPurchases={recentPurchases}
+      collectionCollectibleIds={collectionCollectibleIds}
     />
   );
 }
