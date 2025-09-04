@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent } from "@/components/ui/card";
-import NonUserButton from "@/app/components/UserButton";
+import NonUserButton from "@/app/components/NonUserButton";
 import { useTranslation } from '@/app/hooks/useTranslation';
 import CollectibleImage from './CollectibleImage';
 import { useMediaQuery } from '@/app/hooks/useMediaQuery'
@@ -50,6 +50,8 @@ interface Collection {
 
 interface RecentPurchase {
   mint: number;
+  ownerId: number;
+  username?: string;
   userCollectibleId: number;
   collectible: {
     name: { en: string; de: string; };
@@ -81,7 +83,6 @@ export default function HomePageClient() {
   });
 
   useEffect(() => {
-    // --- Hero Section Data ---
     const fetchHeroData = async () => {
       const collectionsRes = await fetch('/api/db/collection?limit=2');
       const collectionsData = await collectionsRes.json();
@@ -98,7 +99,6 @@ export default function HomePageClient() {
       setLoadingStates(prev => ({...prev, hero: false}));
     };
 
-    // --- Projects Section Data ---
     const fetchProjectsData = async () => {
       const res = await fetch('/api/db/collectible');
       const data = await res.json();
@@ -106,20 +106,34 @@ export default function HomePageClient() {
       setLoadingStates(prev => ({...prev, projects: false}));
     };
 
-    // --- Donators Section Data ---
     const fetchDonatorsData = async () => {
-      const res = await fetch('/api/db/userCollectible?getMostRecent=true');
-      const data = await res.json();
-      setRecentPurchases(data);
+      const recentPurchasesRes = await fetch('/api/db/userCollectible?getMostRecent=true');
+      const recentPurchasesData = await recentPurchasesRes.json();
+
+      const enrichedPurchases = await Promise.all(
+        recentPurchasesData.map(async (purchase: RecentPurchase) => {
+          try {
+            const userRes = await fetch(`/api/db/public/user?userId=${purchase.ownerId}`);
+            if (userRes.ok) {
+              const userData = await userRes.json();
+              return { ...purchase, username: userData.username };
+            }
+          } catch (error) {
+            console.error(`Failed to fetch user for purchase ${purchase.userCollectibleId}`, error);
+          }
+          return purchase;
+        })
+      );
+      
+      setRecentPurchases(enrichedPurchases);
       setLoadingStates(prev => ({...prev, donators: false}));
     };
 
-    // Fetch all sections' data
     fetchHeroData().catch(console.error);
     fetchProjectsData().catch(console.error);
     fetchDonatorsData().catch(console.error);
 
-  }, []); // Empty array ensures this runs once on mount
+  }, []);
  
   useEffect(() => {
     if (!api) return;
@@ -154,9 +168,9 @@ export default function HomePageClient() {
                 <CarouselContent>
                   {featuredCollections.map((collection, index) => (
                     <CarouselItem key={collection.collectionId}>
-                      <div className="w-full flex flex-col md:flex-row items-center justify-between gap-12 p-1">
+                      <div className="w-full flex flex-col md:flex-row justify-between gap-8 md:gap-12 lg:gap-6 p-1">
                         {collection.imageRef && (
-                          <div className="shrink md:w-1/2 flex justify-center">
+                          <div className="md:w-1/2 flex justify-center items-center">
                             <Link href={`/campaign/${collectionCollectibleIds[index]}`} className="hover:underline">
                               <Image 
                                 src={collection.imageRef.img} 
@@ -168,13 +182,17 @@ export default function HomePageClient() {
                             </Link>
                           </div>
                         )}
-                        <div className="w-full flex flex-col md:flex-row items-center justify-between gap-12 p-1">
-                          <Card key={'hero text'} className="bg-card flex flex-col overflow-hidden shadow-lg">
-                            <div className="py-5 pl-10 pr-10 text-left">
-                              <p className="text-md text-muted-foreground mb-8 leading-relaxed md:text-sm">
-                                {collection ? getLocalizedString(collection.description, language).replace(/<[^>]*>?/gm, '').substring(0, 400) + '...' : "Default description..."}
-                              </p>
-                              <NonUserButton label="Learn More" route={`/campaign/${collectionCollectibleIds[index]}`} />
+                        <div className="md:w-1/2">
+                          <Card className="bg-card flex flex-col shadow-lg h-full">
+                            <div className="py-5 pl-10 pr-10 text-left flex flex-col flex-grow justify-between min-h-0">
+                               <div className="overflow-y-auto">
+                                <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
+                                  {collection ? getLocalizedString(collection.description, language).replace(/<[^>]*>?/gm, '').substring(0, 400) + '...' : "Default description..."}
+                                </p>
+                              </div>
+                              <div className="mt-auto pt-4">
+                                <NonUserButton label="Learn More" route={`/campaign/${collectionCollectibleIds[index]}`} />
+                              </div>
                             </div>
                           </Card>
                         </div>
@@ -196,18 +214,18 @@ export default function HomePageClient() {
                 About UBUNɅTION
               </h2>
             </div>
-            <div className="w-full flex flex-col md:flex-row items-center justify-between gap-12 p-1">
-              <div className="w-full flex flex-col md:flex-row items-center justify-between gap-12 p-1">
-                <Card key={'hero text'} className="bg-card flex flex-col overflow-hidden shadow-lg">
-                  <div className="py-5 pl-10 pr-10 text-left">
-                    <p className="text-md text-muted-foreground mb-8 leading-relaxed md:text-sm">
+            <div className="w-full flex flex-col md:flex-row justify-between gap-12 lg:gap-6 p-1">
+              <div className="md:w-1/2">
+                <Card className="bg-card flex flex-col shadow-lg h-full">
+                  <div className="py-5 pl-10 pr-10 text-left flex flex-col flex-grow justify-between">
+                    <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
                       Ubunation is dedicated to fostering a sense of community and enhancing social projects worldwide. Our mission is to connect people with the resources they need to make a positive impact in their communities.
                     </p>
                     <NonUserButton label="Learn More" route='https://www.ubunation.com/' isLink={true} />
                   </div>
                 </Card>
               </div>
-              <div className="shrink md:w-1/2 flex justify-center">
+              <div className="md:w-1/2 flex justify-center">
                 <Link href='https://www.ubunation.com/' target='_blank' className="hover:underline">
                   <Image 
                     src='/images/ubuLion.jpg' 
@@ -275,21 +293,24 @@ export default function HomePageClient() {
                     <CarouselContent>
                       {recentPurchases.map((item, index) => (
                         <CarouselItem key={index}>
-                          <div className="flex justify-center items-center gap-4">
-                              <div key={item.userCollectibleId} className="aspect-square w-1/2">
-                                <Card className="w-full h-full overflow-hidden rounded-full shadow-lg p-2">
-                                    <div className="relative w-full h-full">
-                                      <CollectibleImage
-                                        src={`${item.collectible.imageRef?.url}/${item.mint}.png`}
-                                        fallbackSrc="/images/ubuLion.jpg"
-                                        alt={getLocalizedString(item.collectible.name, language)}
-                                        fill
-                                        style={{ objectFit: 'cover' }}
-                                        className="bg-muted rounded-full"
-                                      />
-                                    </div>
-                                  </Card>
+                          <div className="p-1">
+                            <Card className="overflow-hidden rounded-lg shadow-lg">
+                              <div className="relative aspect-square w-full">
+                                <CollectibleImage
+                                  src={`${item.collectible.imageRef?.url}/${item.mint}.png`}
+                                  fallbackSrc="/images/ubuLion.jpg"
+                                  alt={getLocalizedString(item.collectible.name, language)}
+                                  fill
+                                  style={{ objectFit: 'cover' }}
+                                  className="bg-muted"
+                                />
                               </div>
+                            </Card>
+                            {item.username && (
+                               <Link href={`/public/profile/${item.ownerId}`} className="hover:underline">
+                                <p className="text-center text-sm font-semibold mt-2 truncate">{item.username}</p>
+                               </Link>
+                            )}
                           </div>
                         </CarouselItem>
                       ))}
@@ -304,8 +325,8 @@ export default function HomePageClient() {
                       const displayName = getLocalizedString(item.collectible.name, language);
 
                       return (
-                        <div key={item.userCollectibleId} className="aspect-square w-full">
-                          <Card className="w-full h-full overflow-hidden rounded-full shadow-lg p-2">
+                        <div key={item.userCollectibleId} className="text-center">
+                          <Card className="aspect-square w-full overflow-hidden rounded-full shadow-lg p-2">
                             <div className="relative w-full h-full">
                               <CollectibleImage
                                 src={imageUrl}
@@ -317,6 +338,11 @@ export default function HomePageClient() {
                               />
                             </div>
                           </Card>
+                          {item.username && (
+                             <Link href={`/public/profile/${item.ownerId}`} className="hover:underline">
+                              <p className="font-semibold mt-2 truncate">{item.username}</p>
+                             </Link>
+                          )}
                         </div>
                       );
                     })}
