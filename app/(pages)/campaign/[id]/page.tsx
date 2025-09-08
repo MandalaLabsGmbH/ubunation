@@ -1,11 +1,11 @@
 import CampaignTemplate from '@/app/components/CampaignTemplate';
 import { notFound } from 'next/navigation';
-import axios from 'axios';
 import { Suspense } from 'react';
 
-// --- Type Definitions (no change) ---
+// --- Type Definitions ---
 interface Collectible {
   collectibleId: number;
+  collectionId: number;
   name: { en: string; de: string; };
   description: { en: string; de: string; };
   imageRef?: {
@@ -15,25 +15,57 @@ interface Collectible {
   price?: { base: string };
 }
 
-// FIX 1: Update the type for params to be a Promise
+interface Sponsor {
+    sponsorId: number;
+    name: { en: string; de: string; };
+    description: { en: string; de: string; };
+    organization: { en: string; de: string; };
+    urls: { website: string; };
+    imageRef?: { profile: string; };
+  };
+
 type CampaignPageProps = {
   params: Promise<{ id: string }>;
 };
 
-// --- Data Fetching Function (no change) ---
+// --- Data Fetching Functions (MODIFIED) ---
 async function getCollectible(id: string): Promise<Collectible | null> {
     try {
-        const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/Collectible/getCollectibleByCollectibleId`, {
-            params: { collectibleId: id }
-        });
-        return res.data;
+        const baseUrl = process.env.NEXTAUTH_URL; // Use NEXTAUTH_URL for server-side fetches
+        const res = await fetch(`${baseUrl}/api/db/collectible?collectibleId=${id}`, { cache: 'no-store' });
+        
+        if (!res.ok) {
+            console.error(`API call failed with status: ${res.status}`);
+            return null;
+        }
+        return res.json();
     } catch (error) {
-        console.error("Error fetching collectible:", error);
+        console.error("Error in getCollectible:", error);
         return null;
     }
 }
 
-// --- NEW: Skeleton Component ---
+async function getSponsors(collectionId: number): Promise<Sponsor[]> {
+    if (!collectionId) return [];
+    try {
+        const baseUrl = process.env.NEXTAUTH_URL;
+        const res = await fetch(`${baseUrl}/api/db/sponsor?collectionId=${collectionId}`, { cache: 'no-store' });
+
+        if (!res.ok) {
+            console.error(`API call failed with status: ${res.status}`);
+            return [];
+        }
+        const data = await res.json();
+        console.log("Fetched Sponsors:", data.res);
+        return Array.isArray(data) ? data : [];
+    } catch (error) {
+        console.error("Error in getSponsors:", error);
+        return [];
+    }
+}
+
+
+// --- Skeleton Component (no change) ---
 function CampaignPageSkeleton() {
     return (
         <div className="w-full max-w-7xl mx-auto py-8 px-4 animate-pulse">
@@ -66,22 +98,23 @@ function CampaignPageSkeleton() {
     );
 }
 
-// --- NEW: Async Data Component ---
+// --- Async Data Component (no change) ---
 async function CampaignData({ id }: { id: string }) {
     const collectible = await getCollectible(id);
 
     if (!collectible || !collectible.imageRef?.img || !collectible.name?.en) {
         notFound();
     }
+    
+    const sponsors = await getSponsors(collectible.collectionId);
 
     return (
-        <CampaignTemplate collectible={collectible} />
+        <CampaignTemplate collectible={collectible} sponsors={sponsors} />
     );
 }
 
-// --- Main Page Component (now using Suspense) ---
+// --- Main Page Component (no change) ---
 export default async function CampaignPage({ params }: CampaignPageProps) {
-    // FIX 2: Use 'await' to resolve the params Promise
     const { id } = await params;
     return (
         <Suspense fallback={<CampaignPageSkeleton />}>
