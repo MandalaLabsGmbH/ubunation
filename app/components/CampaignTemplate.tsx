@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { useCart } from '@/app/contexts/CartContext';
 import { Button } from '@/components/ui/button';
+import NonUserButton from "@/app/components/NonUserButton";
 import { useTranslation } from '@/app/hooks/useTranslation';
 import SplitsView from './SplitsView';
 import ImageStaggeredGallery from './ImageStaggeredGallery'; // Import the new component
@@ -175,7 +176,42 @@ export default function CampaignTemplate({ collectible, sponsors }: CampaignTemp
                           </div>
                   </section>
               )}
+        {/* --- Raffle and Rewards Section --- */}
         <section className="w-full py-12 md:py-20 bg-zinc-50 dark:bg-zinc-900">
+          <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
+                Raffle and Rewards
+              </h2>
+            </div>
+            <div className="w-full flex flex-col md:flex-row justify-between gap-12 lg:gap-6 p-1">
+              <div className="md:w-1/2">
+                <Card className="bg-card flex flex-col shadow-lg h-full">
+                  <div className="py-5 pl-10 pr-10 text-left flex flex-col flex-grow justify-between">
+                    <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
+                      Enter our raffle and win great awards!
+                    </p>
+                    <NonUserButton label="Learn More" route='https://www.ubunation.com/' isLink={true} />
+                  </div>
+                </Card>
+              </div>
+              <div className="md:w-1/2 flex justify-center">
+                <Link href='https://www.ubunation.com/' target='_blank' className="hover:underline">
+                  <Image 
+                    src='/images/ubuLion.jpg' 
+                    alt="About Us"
+                    className="rounded-lg shadow-2xl w-full max-w-md"
+                    width={500}
+                    height={500}
+                  />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* --- Splits Section --- */}
+        <section className="w-full py-12 md:py-20 bg-white">
           <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
               <SplitsView />
           </div>

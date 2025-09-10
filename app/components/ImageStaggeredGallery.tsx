@@ -16,7 +16,7 @@ export default function ImageStaggeredGallery({ images }: ImageStaggeredGalleryP
       {/* Column 1 (Pushed Down with margin-top) */}
       <div className="flex flex-col w-1/2 gap-2 md:gap-4 mt-6 md:mt-10">
         {/* Rectangular Image */}
-        <div className="relative w-full aspect-[3/2] rounded-lg overflow-hidden shadow-lg">
+        <div className="relative w-full aspect-square rounded-lg overflow-hidden shadow-lg transform hover:-translate-y-2 transition-transform duration-300 ease-in-out shadow-lg hover:shadow-2xl">
           <Image
             src={images[0]}
             alt="Gallery image 1"
@@ -26,7 +26,7 @@ export default function ImageStaggeredGallery({ images }: ImageStaggeredGalleryP
           />
         </div>
         {/* Square Image */}
-        <div className="relative w-full aspect-square rounded-lg overflow-hidden shadow-lg">
+        <div className="relative w-full aspect-square rounded-lg overflow-hidden shadow-lg transform hover:-translate-y-2 transition-transform duration-300 ease-in-out shadow-lg hover:shadow-2xl">
           <Image
             src={images[1]}
             alt="Gallery image 2"
@@ -40,7 +40,7 @@ export default function ImageStaggeredGallery({ images }: ImageStaggeredGalleryP
       {/* Column 2 (Pushed Up with margin-bottom) */}
       <div className="flex flex-col w-1/2 gap-2 md:gap-4 mb-6 md:mb-10">
         {/* Square Image */}
-        <div className="relative w-full aspect-square rounded-lg overflow-hidden shadow-lg">
+        <div className="relative w-full aspect-square rounded-lg overflow-hidden shadow-lg transform hover:-translate-y-2 transition-transform duration-300 ease-in-out shadow-lg hover:shadow-2xl">
           <Image
             src={images[2]}
             alt="Gallery image 3"
@@ -50,7 +50,7 @@ export default function ImageStaggeredGallery({ images }: ImageStaggeredGalleryP
           />
         </div>
         {/* Rectangular Image */}
-        <div className="relative w-full aspect-[3/2] rounded-lg overflow-hidden shadow-lg">
+        <div className="relative w-full aspect-square rounded-lg overflow-hidden shadow-lg transform hover:-translate-y-2 transition-transform duration-300 ease-in-out shadow-lg hover:shadow-2xl">
           <Image
             src={images[3]}
             alt="Gallery image 4"
