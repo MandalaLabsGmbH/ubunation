@@ -7,6 +7,9 @@ import { useCart } from '@/app/contexts/CartContext';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/app/hooks/useTranslation';
 import SplitsView from './SplitsView';
+import ImageStaggeredGallery from './ImageStaggeredGallery'; // Import the new component
+import { useMediaQuery } from '@/app/hooks/useMediaQuery';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 
 // Update the props to accept a single 'collectible' object
 interface Sponsor {
@@ -33,6 +36,20 @@ export default function CampaignTemplate({ collectible, sponsors }: CampaignTemp
   // All hooks must be called at the top level of the component, before any returns.
   const { language } = useTranslation();
   const { addToCart } = useCart();
+  const isMobile = useMediaQuery('md'); // Hook to check for screen size
+
+  const imageSet1 = [
+    "https://ubunation.s3.eu-central-1.amazonaws.com/assets/samplePerson1.jpg",
+    "https://ubunation.s3.eu-central-1.amazonaws.com/assets/samplePerson2.jpg",
+    "https://ubunation.s3.eu-central-1.amazonaws.com/assets/samplePerson3.jpg",
+    "https://ubunation.s3.eu-central-1.amazonaws.com/assets/samplePerson4.jpg"
+  ];
+  const imageSet2 = [
+    "https://ubunation.s3.eu-central-1.amazonaws.com/assets/samplePerson4.jpg",
+    "https://ubunation.s3.eu-central-1.amazonaws.com/assets/samplePerson3.jpg",
+    "https://ubunation.s3.eu-central-1.amazonaws.com/assets/samplePerson2.jpg",
+    "https://ubunation.s3.eu-central-1.amazonaws.com/assets/samplePerson1.jpg"
+  ];
   
   if (!collectible) {
     return <div>Loading...</div>;
@@ -54,8 +71,8 @@ export default function CampaignTemplate({ collectible, sponsors }: CampaignTemp
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto py-8 px-4">
-          <section className="w-full py-12 md:py-20 bg-white dark:bg-zinc-900">
+    <div className="w-full max-w-7xl">
+          <section className="w-full py-12 md:py-20 bg-white">
             <div className="text-center mb-12">
               <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
                 {displayName}
@@ -91,9 +108,34 @@ export default function CampaignTemplate({ collectible, sponsors }: CampaignTemp
               </div>
             </div>
           </section>
+          <section className="w-full py-12 md:py-20 bg-zinc-50 dark:bg-zinc-900">
+             {isMobile ? (
+                  <Carousel className="w-full max-w-md mx-auto">
+                      <CarouselContent>
+                          <CarouselItem>
+                              <ImageStaggeredGallery images={imageSet1} />
+                          </CarouselItem>
+                          <CarouselItem>
+                              <ImageStaggeredGallery images={imageSet2} />
+                          </CarouselItem>
+                      </CarouselContent>
+                      <CarouselPrevious className="ml-2" />
+                      <CarouselNext className="mr-2" />
+                  </Carousel>
+              ) : (
+                  <div className="flex w-full justify-center items-start gap-4 md:gap-8">
+                      <div className="w-1/2">
+                          <ImageStaggeredGallery images={imageSet1} />
+                      </div>
+                      <div className="w-1/2">
+                          <ImageStaggeredGallery images={imageSet2} />
+                      </div>
+                  </div>
+              )}
+          </section>
           {/* NEW: Sponsors Section */}
               {sponsors && sponsors.length > 0 && (
-                  <section className="w-full py-12 md:py-20 bg-zinc-50 dark:bg-zinc-900">
+                  <section className="w-full py-12 md:py-20 bg-white">
                           <h2 className="text-xl font-semibold text-foreground mb-6">Meet Our Voices</h2>
                           <div className="flex flex-wrap items-center gap-x-12 gap-y-6 mb-6">
                             <p className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground">

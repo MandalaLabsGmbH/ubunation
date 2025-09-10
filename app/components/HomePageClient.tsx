@@ -148,7 +148,6 @@ export default function HomePageClient() {
 
   return (
     <div className="font-sans">
-      <main>
         <section className="w-full">
               <div className="w-full h-60 relative">
                  <Image src="/images/cover.jpg" alt="coverImage" fill style={{objectFit:"cover"}}/>
@@ -207,7 +206,7 @@ export default function HomePageClient() {
         </section>
 
          {/* --- About Section (Static, no loading needed) --- */}
-        <section className="w-full py-12 md:py-20 bg-zinc-50 dark:bg-zinc-900">
+        <section className="w-full py-12 md:py-20 bg-background">
           <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
@@ -241,7 +240,7 @@ export default function HomePageClient() {
         </section>
 
         {/* --- Charity Campaigns Section --- */}
-        <section className="w-full py-12 md:py-20 bg-background">
+        <section className="w-full py-12 md:py-20 bg-zinc-50 dark:bg-zinc-900">
           <div className="container flex-grow p-6 mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
@@ -279,7 +278,7 @@ export default function HomePageClient() {
         </section>
 
         {/* --- Last Donators Section --- */}
-        <section className="w-full py-12 md:py-20 bg-zinc-50 dark:bg-zinc-900">
+        <section className="w-full py-12 md:py-20 bg-background">
           <div className="container flex-grow p-6 mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
@@ -351,7 +350,6 @@ export default function HomePageClient() {
             )}
           </div>
         </section>
-      </main>
     </div>
   );
 }
