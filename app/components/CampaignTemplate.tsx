@@ -71,8 +71,9 @@ export default function CampaignTemplate({ collectible, sponsors }: CampaignTemp
   };
 
   return (
-    <div className="w-full max-w-7xl">
+    <div className="w-full">
           <section className="w-full py-12 md:py-20 bg-white">
+            <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
                 {displayName}
@@ -107,8 +108,10 @@ export default function CampaignTemplate({ collectible, sponsors }: CampaignTemp
                 </Card>
               </div>
             </div>
+            </div>
           </section>
           <section className="w-full py-12 md:py-20 bg-zinc-50 dark:bg-zinc-900">
+            <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
              {isMobile ? (
                   <Carousel className="w-full max-w-md mx-auto">
                       <CarouselContent>
@@ -132,10 +135,12 @@ export default function CampaignTemplate({ collectible, sponsors }: CampaignTemp
                       </div>
                   </div>
               )}
+            </div>
           </section>
           {/* NEW: Sponsors Section */}
               {sponsors && sponsors.length > 0 && (
                   <section className="w-full py-12 md:py-20 bg-white">
+                    <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
                           <h2 className="text-xl font-semibold text-foreground mb-6">Meet Our Voices</h2>
                           <div className="flex flex-wrap items-center gap-x-12 gap-y-6 mb-6">
                             <p className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground">
@@ -167,9 +172,15 @@ export default function CampaignTemplate({ collectible, sponsors }: CampaignTemp
                                 </Card>
                               ))}
                           </div>
+                          </div>
                   </section>
               )}
-        <SplitsView />
+        <section className="w-full py-12 md:py-20 bg-zinc-50 dark:bg-zinc-900">
+          <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
+              <SplitsView />
+          </div>
+        </section>
+        
       </div>
 )
 }
