@@ -2,6 +2,7 @@
 
 import { useEffect, useState, FormEvent } from 'react';
 import { usePayment } from '@/app/contexts/PaymentContext';
+import { useTranslation } from '@/app/hooks/useTranslation';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,6 +43,7 @@ export default function PaymentModal() {
   const { data: session } = useSession();
   const router = useRouter();
   const { openModal: openAuthModal } = useAuthModal();
+  const { translate } = useTranslation();
 
   useEffect(() => {
     if (!isPaymentOpen) return;
@@ -129,28 +131,28 @@ export default function PaymentModal() {
         return (
             <div className="text-center py-12">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-                <p className="mt-4 text-muted-foreground">Processing your request...</p>
+                <p className="mt-4 text-muted-foreground">{translate("paymentModal-processingMessage-1")}</p>
             </div>
         );
       case 'SUCCESS':
         return (
             <div className="text-center py-12">
                 <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-                <h2 className="text-2xl font-bold mb-2">Payment Successful!</h2>
+                <h2 className="text-2xl font-bold mb-2">{translate("paymentModal-successTitle-1")}</h2>
                 
                 {!session ? (
                     <>
                         <p className="text-muted-foreground mb-4">
-                            Your purchases have been connected to the email address <span className="font-semibold text-foreground">{guestEmail}</span>.
+                            {translate("paymentModal-guestSuccessMessage-1")} <span className="font-semibold text-foreground">{guestEmail}</span>.
                         </p>
-                        <p className="text-muted-foreground mb-6">Please click the button below to create an account and see your collectibles!</p>
-                        <Button onClick={handleCreateAccountAndLogin} className="mb-4">Create Account</Button>
-                        <Button variant="ghost" onClick={handleContinueAsGuest}>Continue as Guest</Button>
+                        <p className="text-muted-foreground mb-6">{translate("paymentModal-guestSuccessPrompt-1")}</p>
+                        <Button onClick={handleCreateAccountAndLogin} className="mb-4">{translate("paymentModal-createAccountButton-1")}</Button>
+                        <Button variant="ghost" onClick={handleContinueAsGuest}>{translate("paymentModal-guestContinueButton-1")}</Button>
                     </>
                 ) : (
                     <>
-                        <p className="text-muted-foreground mb-6">Your collectibles have been added to your account. Check your email for a receipt.</p>
-                        <Button onClick={handleDoneForLoggedInUser}>Done</Button>
+                        <p className="text-muted-foreground mb-6">{translate("paymentModal-loggedInSuccessMessage-1")}</p>
+                        <Button onClick={handleDoneForLoggedInUser}>{translate("paymentModal-doneButton-1")}</Button>
                     </>
                 )}
             </div>
@@ -177,10 +179,11 @@ export default function PaymentModal() {
 // Sub-component for selecting a payment method
 function SelectMethodView() {
     const { startStripePayment, startPaypalPayment } = usePayment();
+    const { translate } = useTranslation();
 
     return (
         <div>
-            <h2 className="text-2xl font-bold text-center mb-6">Choose Payment Method</h2>
+            <h2 className="text-2xl font-bold text-center mb-6">{translate("paymentModal-selectMethodTitle-1")}</h2>
             <div className="grid gap-4">
                 <Button variant="outline" className="h-14 text-lg justify-center flex items-center" onClick={() => startStripePayment()}>
                     <Image src="/images/svg/stripe.svg" alt="Stripe" width={60} height={25} />
@@ -210,14 +213,14 @@ function GetEmailView() {
         setGuestEmail(email);
         setPaymentView('SELECT_METHOD');
     };
-
+    const { translate } = useTranslation();
     return (
         <div>
-            <h2 className="text-2xl font-bold text-center mb-6">Continue as Guest</h2>
-            <p className="text-center text-muted-foreground mb-4">Please enter your email to receive your receipt and collectibles.</p>
+            <h2 className="text-2xl font-bold text-center mb-6">{translate("paymentModal-guestTitle-1")}</h2>
+            <p className="text-center text-muted-foreground mb-4">{translate("paymentModal-guestPrompt-1")}</p>
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                    <Label htmlFor="guest-email">Email Address</Label>
+                    <Label htmlFor="guest-email">{translate("paymentModal-guestEmailLabel-1")}</Label>
                     <Input 
                         id="guest-email" 
                         type="email" 
@@ -227,7 +230,7 @@ function GetEmailView() {
                         placeholder="you@example.com"
                     />
                 </div>
-                <Button type="submit" className="w-full">Continue</Button>
+                <Button type="submit" className="w-full">{translate("paymentModal-guestContinueButton-2")}</Button>
             </form>
         </div>
     );
@@ -235,14 +238,15 @@ function GetEmailView() {
 
 // Sub-component for displaying errors
 function ErrorView({ message, onRetry, onClose }: { message: string, onRetry: () => void, onClose: () => void }) {
-    return (
+  const { translate } = useTranslation();  
+  return (
         <div className="text-center py-8">
             <XCircle className="h-16 w-16 text-destructive mx-auto mb-4" />
-            <h2 className="text-2xl font-bold mb-2">Payment Failed</h2>
+            <h2 className="text-2xl font-bold mb-2">{translate("paymentModal-errorTitle-1")}</h2>
             <p className="text-muted-foreground bg-destructive/10 p-3 rounded-md mb-6">{message}</p>
             <div className="flex gap-4 justify-center">
-                <Button variant="outline" onClick={onRetry}>Try Again</Button>
-                <Button variant="secondary" onClick={onClose}>Close</Button>
+                <Button variant="outline" onClick={onRetry}>{translate("paymentModal-retryButton-1")}</Button>
+                <Button variant="secondary" onClick={onClose}>{translate("paymentModal-closeButton-1")}</Button>
             </div>
         </div>
     );

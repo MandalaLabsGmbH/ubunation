@@ -181,7 +181,7 @@ export default function CampaignTemplate({ collectible, sponsors }: CampaignTemp
           <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
-                Raffle and Rewards
+                {translate("campaignTemplate-raffle-title-1")}
               </h2>
             </div>
             <div className="w-full flex flex-col md:flex-row justify-between gap-12 lg:gap-6 p-1">
@@ -189,7 +189,7 @@ export default function CampaignTemplate({ collectible, sponsors }: CampaignTemp
                 <Card className="bg-card flex flex-col shadow-lg h-full">
                   <div className="py-5 pl-10 pr-10 text-left flex flex-col flex-grow justify-between">
                     <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
-                      Enter our raffle and win great awards!
+                      {translate("campaignTemplate-raffle-description-1")}
                     </p>
                     <NonUserButton label="Learn More" route='https://www.ubunation.com/' isLink={true} />
                   </div>

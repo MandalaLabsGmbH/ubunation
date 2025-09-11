@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link';
+import { useTranslation } from '@/app/hooks/useTranslation';
 import { inter } from './fonts'; // Assuming you have fonts set up like this
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,16 +34,17 @@ const LinkedInIcon = () => (
 
 
 export default function Footer() {
+  const { translate } = useTranslation();
   const legalLinks = [
-    { href: 'https://ubunation.com/imprint-content/', label: 'Imprint', key: '5' },
-    { href: 'https://ubunation.com/terms-and-conditions/', label: 'Terms of Use', key: '6' },
+    { href: 'https://ubunation.com/imprint-content/', label: translate("footer-imprintLink-1"), key: '5' },
+    { href: 'https://ubunation.com/terms-and-conditions/', label: translate("footer-termsLink-1"), key: '6' },
   ];
 
   const socialLinks = [
-    { href: 'https://www.facebook.com/ubunation', icon: <FacebookIcon />, label: 'Facebook' },
-    { href: 'https://x.com/ubunationhq', icon: <TwitterXIcon />, label: 'Twitter/X' },
-    { href: 'https://www.instagram.com/ubunation/', icon: <InstagramIcon />, label: 'Instagram' },
-    { href: 'https://www.linkedin.com/company/ubunation/', icon: <LinkedInIcon />, label: 'LinkedIn' },
+    { href: 'https://www.facebook.com/ubunation', icon: <FacebookIcon />, label: translate("footer-facebookLabel-1") },
+    { href: 'https://x.com/ubunationhq', icon: <TwitterXIcon />, label: 'translate("footer-twitterLabel-1")' },
+    { href: 'https://www.instagram.com/ubunation/', icon: <InstagramIcon />, label: 'translate("footer-instagramLabel-1")' },
+    { href: 'https://www.linkedin.com/company/ubunation/', icon: <LinkedInIcon />, label: 'translate("footer-linkedInLabel-1")' },
   ];
 
   return (
@@ -77,16 +79,16 @@ export default function Footer() {
             encType="text/plain"
             className="flex max-w-med items-center space-x-2"
           >
-            <Label htmlFor="email" className="text-white">Subscribe to our Newsletter</Label>
+            <Label htmlFor="email" className="text-white">{translate("footer-newsletterLabel-1")}</Label>
             <Input type="email" name="email" placeholder="Email" className="bg-background" required />
-            <Button type="submit">Subscribe</Button>
+            <Button type="submit">{translate("footer-subscribeButton-1")}</Button>
           </form>
 
         </div>
 
         {/* Bottom row with copyright */}
         <div className="text-white mt-8 text-center text-sm text-foreground/60">
-          <p>© UBUNΛTION 2025</p>
+          <p>{translate("footer-copyright-1")}</p>
         </div>
       </div>
     </footer>

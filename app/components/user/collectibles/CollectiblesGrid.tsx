@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
+import { useTranslation } from '@/app/hooks/useTranslation';
 import CollectibleImage from '../../CollectibleImage'; // Import the new component
 
 // --- Type Definition ---
@@ -21,8 +22,9 @@ interface CollectiblesGridProps {
 
 // --- Main Component ---
 export default function CollectiblesGrid({ collectibles }: CollectiblesGridProps) {
+    const { translate } = useTranslation();
     if (!collectibles || collectibles.length === 0) {
-        return <p className="text-center text-muted-foreground">You don&apos;t own any collectibles yet.</p>;
+        return <p className="text-center text-muted-foreground">{translate("collectiblesGrid-noCollectiblesMessage-1")}</p>;
     }
 
     return (

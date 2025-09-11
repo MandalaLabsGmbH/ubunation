@@ -1,11 +1,13 @@
 'use client'
 
 import { signOut } from "next-auth/react"
+import { useTranslation } from '@/app/hooks/useTranslation';
 
 export default function LogoutButton() {
+    const { translate } = useTranslation();
     const handleLogout = () => {
         // The Fix: Add a confirmation dialog before signing out.
-        if (window.confirm("Are you sure you want to sign out?")) {
+        if (window.confirm(translate("logoutButton-confirm-1"))) {
             signOut({ callbackUrl: '/' });
         }
     };
@@ -16,7 +18,7 @@ export default function LogoutButton() {
             onClick={handleLogout}
             className="w-full text-left"
         >
-            Log Out
+            {translate("logoutButton-logOut-1")}
         </button>
     )
 }

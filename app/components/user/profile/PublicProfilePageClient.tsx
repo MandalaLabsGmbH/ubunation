@@ -45,7 +45,7 @@ export default function PublicProfilePageClient({
     recentCollectibles,
     isCurrentUser
 }: PublicProfilePageClientProps) {
-    const { language } = useTranslation();
+    const { translate, language } = useTranslation();
 
     const displayName = publicUser.username;
 
@@ -81,13 +81,13 @@ export default function PublicProfilePageClient({
                         />
                     </Card>
                     <div className="mt-4 text-center p-4 bg-card rounded-lg shadow-md w-full">
-                        <p className="font-bold text-lg">Owned Collectibles</p>
+                        <p className="font-bold text-lg">{translate("publicProfilePageClient-ownedCollectiblesTitle-1")}</p>
                         <p className="text-3xl font-bold text-primary">{totalCollectibles}</p>
                     </div>
                     {isCurrentUser && (
                         <Link href="/profile" passHref>
                             <Button className="mt-4 w-full bg-blue-600 hover:bg-blue-700 rounded-full">
-                                View Full Profile
+                                {translate("publicProfilePageClient-viewProfileButton-1")}
                             </Button>
                         </Link>
                     )}
@@ -96,7 +96,7 @@ export default function PublicProfilePageClient({
 
             {/* --- Owned Collectibles Section --- */}
             <section>
-                <h2 className="text-3xl font-bold text-foreground mb-8">Owned Collectibles</h2>
+                <h2 className="text-3xl font-bold text-foreground mb-8">{translate("publicProfilePageClient-ownedCollectiblesTitle-1")}</h2>
                 {recentCollectibles.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                         {recentCollectibles.map((item) => {
@@ -118,7 +118,7 @@ export default function PublicProfilePageClient({
                                         </div>
                                         <CardContent className="flex-grow text-center p-4">
                                             <p className="text-sm text-muted-foreground">
-                                                Acquired On: {formatDate(item.createdDt)}
+                                                {translate("publicProfilePageClient-acquiredOnLabel-1")}: {formatDate(item.createdDt)}
                                             </p>
                                         </CardContent>
                                     </Card>
@@ -127,7 +127,7 @@ export default function PublicProfilePageClient({
                         })}
                     </div>
                 ) : (
-                    <p className="text-muted-foreground">This user does not own any collectibles yet.</p>
+                    <p className="text-muted-foreground">{translate("publicProfilePageClient-noCollectiblesMessage-1")}</p>
                 )}
             </section>
         </main>

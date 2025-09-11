@@ -30,10 +30,10 @@ export default function Header() {
 
   // Define the navigation links in an array for easier management
   const navLinks = [
-    { href: '/', label: 'Home' },
-    { href: 'https://ubunation.com/', label: 'Projects' },
-    { href: 'https://ubunation.com/', label: 'About' },
-    { href: 'https://ubunation.com/', label: 'Contact' },
+    { href: '/', label: translate("header-homeLink-1") },
+    { href: 'https://ubunation.com/', label: translate("header-projectsLink-1") },
+    { href: 'https://ubunation.com/', label: translate("header-aboutLink-1") },
+    { href: 'https://ubunation.com/', label: translate("header-contactLink-1") },
   ];
 
   return (
@@ -97,7 +97,7 @@ export default function Header() {
             <UserDropdown />
           ) : (
             <button onClick={() => openModal({ redirectUrl: '/' })} className="text-sm font-semibold text-foreground/80 hover:text-foreground transition-colors">
-              {translate('login')}
+              {translate("header-loginButton-1")}
             </button>
           )}
 
@@ -107,7 +107,7 @@ export default function Header() {
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="icon">
                   <Menu className="h-[1.2rem] w-[1.2rem]" />
-                  <span className="sr-only">Open main menu</span>
+                  <span className="sr-only">{translate("header-openMenuSrOnly-1")}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
@@ -129,7 +129,7 @@ export default function Header() {
                   <LanguageSelector />
                 </DropdownMenuItem>
                 <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="flex justify-between">
-                  <span>Theme</span>
+                  <span>{translate("header-themeLabel-1")}</span>
                   <ThemeToggleButton />
                 </DropdownMenuItem>
               </DropdownMenuContent>

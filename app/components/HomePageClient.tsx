@@ -190,7 +190,7 @@ export default function HomePageClient() {
                                 </p>
                               </div>
                               <div className="mt-auto pt-4">
-                                <NonUserButton label="Learn More" route={`/campaign/${collectionCollectibleIds[index]}`} />
+                                <NonUserButton label={translate("homePageClient-learnMoreButton-1")} route={`/campaign/${collectionCollectibleIds[index]}`} />
                               </div>
                             </div>
                           </Card>
@@ -210,7 +210,7 @@ export default function HomePageClient() {
           <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
-                About UBUNɅTION
+                {translate("homePageClient-aboutTitle-1")}
               </h2>
             </div>
             <div className="w-full flex flex-col md:flex-row justify-between gap-12 lg:gap-6 p-1">
@@ -218,7 +218,7 @@ export default function HomePageClient() {
                 <Card className="bg-card flex flex-col shadow-lg h-full">
                   <div className="py-5 pl-10 pr-10 text-left flex flex-col flex-grow justify-between">
                     <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
-                      Ubunation is dedicated to fostering a sense of community and enhancing social projects worldwide. Our mission is to connect people with the resources they need to make a positive impact in their communities.
+                      {translate("homePageClient-aboutDescription-1")}
                     </p>
                     <NonUserButton label="Learn More" route='https://www.ubunation.com/' isLink={true} />
                   </div>
@@ -244,7 +244,7 @@ export default function HomePageClient() {
           <div className="container flex-grow p-6 mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
-                Our Projects
+                {translate("homePageClient-projectsTitle-1")}
               </h2>
             </div>
             {loadingStates.projects ? <SectionSpinner /> : (
@@ -282,7 +282,7 @@ export default function HomePageClient() {
           <div className="container flex-grow p-6 mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
-                Last Donators
+                {translate("homePageClient-donatorsTitle-1")}
               </h2>
             </div>
             {loadingStates.donators ? <SectionSpinner /> : (
@@ -345,7 +345,7 @@ export default function HomePageClient() {
                   </div>
                 )
               ) : (
-                <p className="text-center text-muted-foreground">No recent purchases to display right now.</p>
+                <p className="text-center text-muted-foreground">{translate("homePageClient-noDonatorsMessage-1")}</p>
               )
             )}
           </div>

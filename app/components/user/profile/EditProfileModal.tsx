@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, FormEvent } from 'react';
+import { useTranslation } from '@/app/hooks/useTranslation';
 import { getAmplifyToken } from '@/app/_helpers/apiHelpers';
 import { useEditProfileModal } from '@/app/contexts/EditProfileModalContext';
 import { useUser } from '@/app/contexts/UserContext';
@@ -26,6 +27,7 @@ export default function EditProfileModal() {
     const { isOpen, closeModal } = useEditProfileModal();
     const { user, setUser } = useUser();
     const router = useRouter(); // Initialize the router
+    const { translate } = useTranslation();
 
     const [formState, setFormState] = useState<FormState>({
         firstName: '',
@@ -120,7 +122,7 @@ export default function EditProfileModal() {
             return <div className="text-center py-20"><Loader2 className="h-12 w-12 animate-spin mx-auto" /></div>;
         }
         if (status === 'success') {
-            return <div className="text-center py-20"><CheckCircle className="h-16 w-16 text-green-500 mx-auto" /><p className="mt-4">Profile updated successfully!</p></div>;
+            return <div className="text-center py-20"><CheckCircle className="h-16 w-16 text-green-500 mx-auto" /><p className="mt-4">{translate("editProfileModal-loading-1")}</p></div>;
         }
         if (status === 'error') {
             return <div className="text-center py-20"><XCircle className="h-16 w-16 text-destructive mx-auto" /><p className="mt-4 text-destructive">{errorMessage}</p><Button onClick={() => setStatus('idle')} className="mt-4">Try Again</Button></div>;
@@ -129,29 +131,29 @@ export default function EditProfileModal() {
         return (
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
-                    <Label htmlFor="firstName">First Name</Label>
+                    <Label htmlFor="firstName">{translate("editProfileModal-firstNameLabel-1")}</Label>
                     <Input id="firstName" name="firstName" value={formState.firstName} onChange={handleChange} placeholder="e.g. John" />
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="lastName">Last Name</Label>
+                    <Label htmlFor="lastName">{translate("editProfileModal-lastNameLabel-1")}</Label>
                     <Input id="lastName" name="lastName" value={formState.lastName} onChange={handleChange} placeholder="e.g. Doe" />
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="username">Username</Label>
+                    <Label htmlFor="username">{translate("editProfileModal-usernameLabel-1")}</Label>
                     <Input id="username" name="username" value={formState.username} onChange={handleChange} placeholder="e.g. johndoe24" />
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="country">Country</Label>
+                    <Label htmlFor="country">{translate("editProfileModal-countryLabel-1")}</Label>
                     <Input id="country" name="country" value={formState.country} onChange={handleChange} placeholder="e.g. Germany" />
                 </div>
                 <div className="flex items-center justify-between rounded-lg border p-3">
                     <div className="space-y-0.5">
-                        <Label>Newsletter Opt-in</Label>
-                        <p className="text-sm text-muted-foreground">Receive updates and news from UBUNATION.</p>
+                        <Label>{translate("editProfileModal-newsletterLabel-1")}</Label>
+                        <p className="text-sm text-muted-foreground">{translate("editProfileModal-newsletterDescription-1")}</p>
                     </div>
                     <Switch checked={formState.newsletter} onCheckedChange={handleSwitchChange} />
                 </div>
-                <Button type="submit" className="w-full">Submit</Button>
+                <Button type="submit" className="w-full">{translate("editProfileModal-submitButton-1")}</Button>
             </form>
         );
     };
@@ -161,7 +163,7 @@ export default function EditProfileModal() {
             <Card className="relative bg-background rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
                 <button onClick={closeModal} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"><X className="h-6 w-6" /></button>
                 <div className="mb-4">
-                    <h2 className="text-2xl font-bold">Edit Profile</h2>
+                    <h2 className="text-2xl font-bold">{translate("editProfileModal-title-1")}</h2>
                 </div>
                 <div className="max-h-[70vh] overflow-y-auto pr-2">
                     {renderFormContent()}

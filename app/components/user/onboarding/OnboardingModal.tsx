@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, FormEvent, useEffect } from 'react';
+import { useTranslation } from '@/app/hooks/useTranslation';
 import { useUser } from '@/app/contexts/UserContext';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,6 +11,7 @@ import { Loader2 } from 'lucide-react';
 import { getAmplifyToken } from '@/app/_helpers/apiHelpers';
 
 export default function OnboardingModal() {
+    const { translate } = useTranslation();
     const { user, setUser } = useUser();
     const [isOpen, setIsOpen] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -102,29 +104,29 @@ export default function OnboardingModal() {
         <div className="fixed inset-0 bg-black/60 z-50 flex justify-center items-center">
             <Card className="relative bg-background rounded-lg shadow-xl p-8 w-full max-w-md mx-4">
                 <div className="text-center mb-6">
-                    <h2 className="text-2xl font-bold">Welcome to UBUNɅTION!</h2>
-                    <p className="text-muted-foreground">Please tell us a few more things about yourself to get started.</p>
+                    <h2 className="text-2xl font-bold">{translate("onboardingModal-title-1")}</h2>
+                    <p className="text-muted-foreground">{translate("onboardingModal-description-1")}</p>
                 </div>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <Label htmlFor="firstName">First Name</Label>
+                        <Label htmlFor="firstName">{translate("onboardingModal-firstNameLabel-1")}</Label>
                         <Input id="firstName" name="firstName" value={formState.firstName} onChange={handleChange} required />
                     </div>
                     <div>
-                        <Label htmlFor="lasttName">Last Name</Label>
+                        <Label htmlFor="lasttName">{translate("onboardingModal-lastNameLabel-1")}</Label>
                         <Input id="lastName" name="lastName" value={formState.lastName} onChange={handleChange} required />
                     </div>
                     <div>
-                        <Label htmlFor="country">Country</Label>
+                        <Label htmlFor="country">{translate("onboardingModal-countryLabel-1")}</Label>
                         <Input id="country" name="country" value={formState.country} onChange={handleChange} required />
                     </div>
                     <div>
-                        <Label htmlFor="username">Username</Label>
+                        <Label htmlFor="username">{translate("onboardingModal-usernameLabel-1")}</Label>
                         <Input id="username" name="username" value={formState.username} onChange={handleChange} required />
                     </div>
                     {error && <p className="text-red-600 text-sm text-center">{error}</p>}
                     <Button type="submit" className="w-full" disabled={loading}>
-                        {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Confirm"}
+                        {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : translate("onboardingModal-confirmButton-1")}
                     </Button>
                 </form>
             </Card>

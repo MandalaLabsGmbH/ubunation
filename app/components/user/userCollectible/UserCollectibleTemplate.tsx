@@ -38,7 +38,7 @@ interface UserCollectibleTemplateProps {
 }
 
 export default function UserCollectibleTemplate({ details, isOwner }: UserCollectibleTemplateProps) {
-  const { language } = useTranslation();
+  const { translate, language } = useTranslation();
   const [activeTab, setActiveTab] = useState<'overview' | 'splits'>('overview');
   const [isDownloading, setIsDownloading] = useState(false);
 
@@ -138,11 +138,11 @@ export default function UserCollectibleTemplate({ details, isOwner }: UserCollec
                       ) : (
                         <Download className="mr-2 h-4 w-4" />
                       )}
-                      Download .png
+                      {translate("userCollectibleTemplate-downloadButton-1")}
                     </Button>
                     <Button className= "w-full bg-sky-600 hover:bg-sky-700 px-8 py-3 rounded-full text-lg font-semibold shadow-lg transition-transform transform hover:scale-105" onClick={handleShareToFacebook}>
                       <FacebookIcon />
-                      Share to Facebook
+                      {translate("userCollectibleTemplate-shareButton-1")}
                     </Button>
                 </div>
               )}
@@ -151,11 +151,11 @@ export default function UserCollectibleTemplate({ details, isOwner }: UserCollec
               <Card className="bg-card shadow-lg rounded-lg w-full">
                 <CardContent className="p-6 md:p-8">
                   <div className="pb-4 mb-4 border-b">
-                    <p className="text-sm font-semibold text-muted-foreground">Owned By</p>
+                    <p className="text-sm font-semibold text-muted-foreground">{translate("userCollectibleTemplate-ownedByLabel-1")}</p>
                     <p className="text-lg font-bold">{ownerName}</p>
                   </div>
 
-                  <h2 className="text-xl font-semibold text-foreground mb-4">Description</h2>
+                  <h2 className="text-xl font-semibold text-foreground mb-4">{translate("userCollectibleTemplate-descriptionTitle-1")}</h2>
                   <div
                     className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground"
                     dangerouslySetInnerHTML={{ __html: displayDescription }}

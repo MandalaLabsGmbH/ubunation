@@ -2,18 +2,21 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { useTranslation } from '@/app/hooks/useTranslation';
 
 // Data for the donut chart.
-const data = [
-  { name: 'Charity', value: 80, fill: '#3b82f6' }, // Blue
-  { name: 'Ubunation', value: 20, fill: '#ec4899' }, // Pink
-];
 
 export default function SplitsView() {
+  const { translate } = useTranslation();
+  const data = [
+    { name: translate("splitsView-charityLabel-1"), value: 80, fill: '#3b82f6' }, // Blue
+    { name: translate("splitsView-ubunationLabel-1"), value: 20, fill: '#ec4899' }, // Pink
+  ];
+
   return (
     <Card className="bg-card shadow-lg rounded-lg">
       <CardHeader>
-        <CardTitle className="text-xl font-semibold text-foreground">Splits Overview</CardTitle>
+        <CardTitle className="text-xl font-semibold text-foreground">{translate("splitsView-title-1")}</CardTitle>
       </CardHeader>
       <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
         {/* Donut Chart */}
@@ -62,7 +65,7 @@ export default function SplitsView() {
             ))}
           </div>
           <p className="text-xs text-muted-foreground italic">
-            * For full transparency, the final amount is calculated after deducting any applicable taxes or additional conversion/transaction fees. The split for UBUNATION covers platform development, collection production, and marketing efforts while facilitating the planning of more campaigns and partnering with additional charitable causes.
+            {translate("splitsView-disclaimer-1")}
           </p>
         </div>
       </CardContent>

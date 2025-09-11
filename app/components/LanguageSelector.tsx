@@ -11,22 +11,22 @@ import {
 import { Globe } from 'lucide-react';
 
 export default function LanguageSelector() {
-  const { language, setLanguage } = useTranslation();
+  const { translate, language, setLanguage } = useTranslation();
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="icon">
           <Globe className="h-[1.2rem] w-[1.2rem]" />
-          <span className="sr-only">Change language</span>
+          <span className="sr-only">{translate("languageSelector-srOnly-1")}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => setLanguage('en')} disabled={language === 'en'}>
-          English
+          {translate("languageSelector-english-1")}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setLanguage('de')} disabled={language === 'de'}>
-          Deutsch
+          {translate("languageSelector-german-1")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

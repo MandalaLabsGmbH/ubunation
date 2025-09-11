@@ -40,7 +40,7 @@ export default function ProfilePageClient({
     mostRecentPurchaseItem,
     recentCollectibles
 }: ProfilePageClientProps) {
-    const { language } = useTranslation();
+    const { translate, language } = useTranslation();
     const { setUser } = useUser();
     const { openModal: openEditProfileModal } = useEditProfileModal();
     
@@ -88,21 +88,21 @@ export default function ProfilePageClient({
                         />
                     </Card>
                     <div className="mt-4 text-center p-4 bg-card rounded-lg shadow-md w-full">
-                        <p className="font-bold text-lg">Owned Collectibles</p>
+                        <p className="font-bold text-lg">{translate("profilePageClient-ownedCollectiblesTitle-1")}</p>
                         <p className="text-3xl font-bold text-primary">{totalCollectibles}</p>
                         <div className="mt-2 text-sm text-muted-foreground bg-muted p-2 rounded">
                             {user.email}
                         </div>
                     </div>
                     <Button onClick={openEditProfileModal} className="mt-4 w-full bg-blue-600 hover:bg-blue-700 rounded-full">
-                        Edit Profile
+                        {translate("profilePageClient-editProfileButton-1")}
                     </Button>
                 </div>
             </section>
 
             {/* --- Owned Collectibles Section --- */}
             <section>
-                <h2 className="text-3xl font-bold text-foreground mb-8">Owned Collectibles</h2>
+                <h2 className="text-3xl font-bold text-foreground mb-8">{translate("profilePageClient-totalCollectiblesLabel-1")}</h2>
                 {recentCollectibles.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                         {recentCollectibles.map((item) => {
@@ -126,7 +126,7 @@ export default function ProfilePageClient({
                                         </div>
                                         <CardContent className="flex-grow text-center p-4">
                                             <p className="text-sm text-muted-foreground">
-                                                Purchased On: {formatDate(item.userCollectible.createdDt)}
+                                                {translate("profilePageClient-purchasedOnLabel-1")}: {formatDate(item.userCollectible.createdDt)}
                                             </p>
                                         </CardContent>
                                     </Card>
@@ -135,13 +135,13 @@ export default function ProfilePageClient({
                         })}
                     </div>
                 ) : (
-                    <p className="text-muted-foreground">No collectibles purchased yet.</p>
+                    <p className="text-muted-foreground">{translate("profilePageClient-noCollectiblesMessage-1")}</p>
                 )}
                 {totalCollectibles > 4 && (
                     <div className="text-center mt-12">
                         <Link href="/collectibles" passHref>
                             <Button size="lg" className="bg-blue-600 hover:bg-blue-700 rounded-full px-10 py-6 text-lg">
-                                View All Collectibles
+                                {translate("profilePageClient-viewAllButton-1")}
                             </Button>
                         </Link>
                     </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link';
+import { useTranslation } from '@/app/hooks/useTranslation';
 import { usePurchasesModal } from '@/app/contexts/PurchasesModalContext';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,6 +18,7 @@ import LogoutButton from '../../logout-button';
 
 export default function UserDropdown() {
   const { openModal } = usePurchasesModal();
+  const { translate } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
 
   const handleOpenPurchases = () => {
@@ -36,16 +38,16 @@ export default function UserDropdown() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>My Account</DropdownMenuLabel>
+        <DropdownMenuLabel>{translate("userDropdown-myAccountLabel-1")}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="/profile">Profile</Link>
+          <Link href="/profile">{translate("userDropdown-profileLink-1")}</Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href="/collectibles">My Collectibles</Link>
+          <Link href="/collectibles">{translate("userDropdown-myCollectiblesLink-1")}</Link>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={handleOpenPurchases}>
-          Purchases
+          {translate("userDropdown-purchasesLink-1")} 
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         {/* The Fix: Add the LogoutButton as an item in the dropdown */}

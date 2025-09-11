@@ -1,12 +1,14 @@
 'use client'
 
 import * as React from 'react'
+import { useTranslation } from '@/app/hooks/useTranslation';
 import { Moon, Sun } from 'lucide-react'
 import { useTheme } from 'next-themes'
 
 import { Button } from '@/components/ui/button'
 
 export function ThemeToggleButton() {
+   const { translate } = useTranslation();
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = React.useState(false)
 
@@ -30,7 +32,7 @@ export function ThemeToggleButton() {
       ) : (
         <Sun className="h-[1.2rem] w-[1.2rem] transition-all" />
       )}
-      <span className="sr-only">Toggle theme</span>
+      <span className="sr-only">{translate("themeToggleButton-srOnly-1")}</span>
     </Button>
   )
 }

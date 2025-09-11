@@ -63,7 +63,7 @@ const fetchPurchaseDetails = async (purchaseId: number): Promise<PurchaseDetailI
 // --- Main Component ---
 export default function PurchasesModal() {
   const { isOpen, closeModal } = usePurchasesModal();
-  const { language } = useTranslation();
+  const { translate, language } = useTranslation();
   const [view, setView] = useState<'list' | 'detail'>('list');
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [selectedPurchase, setSelectedPurchase] = useState<Purchase | null>(null);
@@ -116,7 +116,7 @@ export default function PurchasesModal() {
   const renderListView = () => (
     <>
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">My Purchases</h2>
+        <h2 className="text-2xl font-bold">{translate("purchasesModal-title-1")}</h2>
       </div>
       <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2">
         {isLoading ? (
@@ -126,7 +126,7 @@ export default function PurchasesModal() {
             <Card key={p.purchaseId} className="p-4 hover:bg-muted cursor-pointer transition-colors" onClick={() => handleSelectPurchase(p)}>
               <div className="flex justify-between items-center">
                 <div className="font-semibold">{formatDate(p.updatedDt)}</div>
-                <div className="text-muted-foreground">{p.itemCount} collectibles purchased</div>
+                <div className="text-muted-foreground">{p.itemCount} {translate("purchasesModal-collectiblesPurchasedLabel-1")}</div>
                 <div className="font-bold">€{p.purchaseData.totalPrice.toFixed(2)}</div>
               </div>
             </Card>
@@ -144,7 +144,7 @@ export default function PurchasesModal() {
       <>
         <div className="flex items-center mb-6">
           <Button variant="ghost" size="icon" className="mr-2" onClick={handleBackToList}><ArrowLeft /></Button>
-          <h2 className="text-2xl font-bold">Receipt - {formatDate(selectedPurchase.updatedDt)}</h2>
+          <h2 className="text-2xl font-bold">{translate("purchasesModal-receiptTitle-1")} {formatDate(selectedPurchase.updatedDt)}</h2>
         </div>
         <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2 bg-muted/50 p-4 rounded-lg">
           {isLoadingDetails ? (
@@ -168,14 +168,14 @@ export default function PurchasesModal() {
                     />
                     <div className="flex-grow">
                       <p className="font-semibold">{displayName}</p>
-                      <p className="text-xs text-muted-foreground">Mint #{item.userCollectible.mint}</p>
+                      <p className="text-xs text-muted-foreground">{translate("purchasesModal-mintLabel-1")}{item.userCollectible.mint}</p>
                     </div>
                     <div className="font-semibold">€{itemPrice.toFixed(2)}</div>
                   </div>
                 );
               })}
               <div className="flex justify-end items-center pt-4 mt-4 border-t-2">
-                <span className="text-lg font-bold">Total:</span>
+                <span className="text-lg font-bold">{translate("purchasesModal-totalLabel-1")}</span>
                 <span className="text-xl font-bold ml-4">€{total.toFixed(2)}</span>
               </div>
             </>
