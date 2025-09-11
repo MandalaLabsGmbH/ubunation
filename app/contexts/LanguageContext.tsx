@@ -3,26 +3,19 @@
 import { createContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import Cookies from 'js-cookie';
 
-// Local fallback translation file content.
-// This ensures that there are always translations available on initial render
-// and provides a fallback if the remote fetch fails.
-const localEnTranslations = {
+// A minimal, hardcoded fallback in case both remote and local fetches fail
+const emergencyTranslations = {
   "login": "Login",
-  "logout": "Logout",
-  "donateAndGetNft": "Donate Now & Get Your ULT NFT",
-  "discoverUbunation": "Discover UBUNΛTION: Uniting Hearts, Changing Lives –",
-  "exploreCampaigns": "Explore Our Current Charity Campaigns!",
   "buyNow": "Buy Now",
-  "choosePaymentMethod": "Choose Payment Method",
-  "completeYourPurchase": "Complete Your Purchase",
-  "paymentSuccessful": "Payment Successful!",
-  "paymentFailed": "Payment Failed",
-  "yourShoppingCart": "Your Shopping Cart"
+  "featuredProjectTitle": "Featured Project",
+  "aboutTitle": "About UBUNɅTION",
+  "projectsTitle": "Our Projects",
+  "donatorsTitle": "Last Donators"
 };
 
 // Define the URLs for your public translation files
-const EN_JSON_URL = 'https://ubunation.s3.eu-central-1.amazonaws.com/locale/en.json';
-const DE_JSON_URL = 'https://ubunation.s3.eu-central-1.amazonaws.com/locale/de.json';
+const EN_JSON_URL = 'https://ubunation.s3.eu-central-1.amazonaws.com/locale/en.jsonnn';
+const DE_JSON_URL = 'https://ubunation.s3.eu-central-1.amazonaws.com/locale/de.jsonnn';
 
 type Language = 'en' | 'de';
 type Translations = Record<string, string>;
@@ -39,45 +32,65 @@ export const LanguageContext = createContext<LanguageContextType | undefined>(un
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<Language>('en');
-  // Initialize state with the local English translations as a default/fallback
-  const [translations, setTranslations] = useState<Translations>(localEnTranslations);
-  const [isLoading, setIsLoading] = useState(false); // Set initial loading to false
+  const [translations, setTranslations] = useState<Translations>(emergencyTranslations);
+  const [isLoading, setIsLoading] = useState(true);
 
    useEffect(() => {
-    // Check for a language parameter in the URL first.
     const searchParams = new URLSearchParams(window.location.search);
     const langFromUrl = searchParams.get('language') as Language | null;
 
     if (langFromUrl && ['en', 'de'].includes(langFromUrl)) {
-      // If a valid language is found in the URL, set it and stop.
       setLanguage(langFromUrl);
       return;
     }
 
-    // If no URL parameter is found, fall back to the cookie.
     const savedLanguage = Cookies.get('app-language') as Language | undefined;
     if (savedLanguage && ['en', 'de'].includes(savedLanguage)) {
       setLanguageState(savedLanguage);
     }
-  }, []); // Empty dependency array ensures this runs only once on mount.
+  }, []);
 
   useEffect(() => {
     const fetchTranslations = async () => {
       setIsLoading(true);
-      const url = language === 'de' ? DE_JSON_URL : EN_JSON_URL;
+      const remoteUrl = language === 'de' ? DE_JSON_URL : EN_JSON_URL;
+      const localUrl = language === 'de' ? '/locale/de.json' : '/locale/en.json';
+
+      // --- More Robust Fetching Logic ---
+
+      // 1. Attempt to fetch from remote URL
       try {
-        const response = await fetch(url, { cache: 'no-store' });
-        if (!response.ok) {
-          throw new Error(`Failed to fetch translations from ${url}. Status: ${response.status}`);
+        const response = await fetch(remoteUrl, { cache: 'no-store' });
+        if (response.ok) {
+          const data = await response.json();
+          setTranslations(data);
+          setIsLoading(false);
+          return; // Success, exit the function
         }
-        const data = await response.json();
-        setTranslations(data);
+        // If response is not ok (e.g., 404), log it and fall through to the next step
+        console.warn(`Remote fetch failed with status ${response.status}. Falling back to local.`);
       } catch (error) {
-        console.error("Translation loading error:", error);
-        setTranslations(localEnTranslations);
-      } finally {
-        setIsLoading(false);
+        // This catches network errors (e.g., DNS, CORS, offline)
+        console.warn("Remote fetch failed with a network error. Falling back to local.", error);
       }
+
+      // 2. If remote fetch failed, attempt to fetch from local public URL
+      try {
+        const localResponse = await fetch(localUrl);
+        if (localResponse.ok) {
+          const localData = await localResponse.json();
+          setTranslations(localData);
+          setIsLoading(false);
+          return; // Success, exit the function
+        }
+        console.error(`Local fallback failed with status ${localResponse.status}. Using emergency translations.`);
+      } catch (localError) {
+        console.error("Local fallback failed with a network error. Using emergency translations.", localError);
+      }
+
+      // 3. If both fetches fail, use the hardcoded emergency translations
+      setTranslations(emergencyTranslations);
+      setIsLoading(false);
     };
 
     fetchTranslations();
@@ -89,6 +102,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   };
 
   const translate = useCallback((key: string): string => {
+    // Return the key itself as a fallback if the key doesn't exist in the loaded translations
     return translations[key] || key;
   }, [translations]);
 

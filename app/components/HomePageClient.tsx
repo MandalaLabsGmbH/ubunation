@@ -64,7 +64,7 @@ interface RecentPurchase {
 
 // Component no longer receives props
 export default function HomePageClient() {
-  const { language } = useTranslation();
+  const { translate, language } = useTranslation();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [api, setApi] = useState<CarouselApi>()
   const isMobile = useMediaQuery('md');
@@ -159,7 +159,7 @@ export default function HomePageClient() {
           <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
-                Featured Project
+                {translate("homePageClient-featuredProjectTitle-1")}
               </h2>
             </div>
             {loadingStates.hero ? <SectionSpinner /> : (
@@ -181,7 +181,7 @@ export default function HomePageClient() {
                             </Link>
                           </div>
                         )}
-                        <div className="md:w-1/2">
+                        <div className="w-full">
                           <Card className="bg-card flex flex-col shadow-lg h-full">
                             <div className="py-5 pl-10 pr-10 text-left flex flex-col flex-grow justify-between min-h-0">
                                <div className="overflow-y-auto">
@@ -199,7 +199,7 @@ export default function HomePageClient() {
                     </CarouselItem>
                   ))}
                 </CarouselContent>
-                <CarouselDots />,
+                <CarouselDots />
               </Carousel>
             )}
           </div>
@@ -214,7 +214,7 @@ export default function HomePageClient() {
               </h2>
             </div>
             <div className="w-full flex flex-col md:flex-row justify-between gap-12 lg:gap-6 p-1">
-              <div className="md:w-1/2">
+              <div className="w-full">
                 <Card className="bg-card flex flex-col shadow-lg h-full">
                   <div className="py-5 pl-10 pr-10 text-left flex flex-col flex-grow justify-between">
                     <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
@@ -224,7 +224,7 @@ export default function HomePageClient() {
                   </div>
                 </Card>
               </div>
-              <div className="md:w-1/2 flex justify-center">
+               <div className="md:w-1/2 flex justify-center items-center">
                 <Link href='https://www.ubunation.com/' target='_blank' className="hover:underline">
                   <Image 
                     src='/images/ubuLion.jpg' 
