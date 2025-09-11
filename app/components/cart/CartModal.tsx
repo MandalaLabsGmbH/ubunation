@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import { useTranslation } from '@/app/hooks/useTranslation';
 import { useCart, CartItem } from '@/app/contexts/CartContext';
 import { usePayment } from '@/app/contexts/PaymentContext';
 import { Button } from '@/components/ui/button';
@@ -10,9 +11,10 @@ import { X, ShoppingCart, ChevronLeft, ChevronRight } from 'lucide-react';
 
 // The CartItemRow now uses the new updateItemQuantity function
 function CartItemRow({ item, onUpdateQuantity, onRemove }: { item: CartItem; onUpdateQuantity: (id: number, quantity: number) => void; onRemove: (id: number) => void; }) {
-    
+const { translate } = useTranslation();
+const translation = translate("cartModal-removeConfirmation-1");
     const handleRemoveClick = () => {
-        if (window.confirm('This will remove the item from your cart. Are you sure?')) {
+        if (window.confirm(translation)) {
             onRemove(item.collectibleId);
         }
     };
@@ -43,7 +45,7 @@ function CartItemRow({ item, onUpdateQuantity, onRemove }: { item: CartItem; onU
                         <span className="text-sm font-bold w-4 text-center">{item.quantity}</span>
                         <button onClick={increment} className="hover:bg-muted rounded-sm"><ChevronRight size={14} /></button>
                     </div>
-                    <button onClick={handleRemoveClick} className="text-xs text-red-500 hover:underline">Remove</button>
+                    <button onClick={handleRemoveClick} className="text-xs text-red-500 hover:underline">{translate("cartModal-removeButton-1")}</button>
                 </div>
             </div>
         </div>
@@ -54,6 +56,7 @@ export default function CartModal() {
   const { isOpen, closeCart, cartItems, clearCart, itemCount, updateItemQuantity } = useCart();
   const { openPayment } = usePayment();
   const [showConfirm, setShowConfirm] = useState(false);
+  const { translate } = useTranslation();
 
   if (!isOpen) return null;
 
@@ -80,7 +83,7 @@ export default function CartModal() {
         <button onClick={closeCart} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"><X className="h-6 w-6" /></button>
         <div className="flex items-center gap-4 mb-6">
             <ShoppingCart className="h-6 w-6" />
-            <h2 className="text-2xl font-bold">Your Shopping Cart ({itemCount})</h2>
+            <h2 className="text-2xl font-bold">{translate("cartModal-title-1")} ({itemCount})</h2>
         </div>
         {itemCount > 0 ? (
           <>
@@ -89,27 +92,27 @@ export default function CartModal() {
             </div>
             <div className="border-t pt-4">
                 <div className="flex justify-between items-center font-bold text-lg mb-4">
-                    <span>Total:</span>
+                    <span>{translate("cartModal-totalLabel-1")}</span>
                     <span>€{totalPrice.toFixed(2)}</span>
                 </div>
                 {showConfirm ? (
                     <div className="bg-destructive/10 border border-destructive/50 rounded-lg p-4 text-center">
-                        <p className="text-destructive-foreground mb-4">Are you sure you want to remove all items from your cart?</p>
+                        <p className="text-destructive-foreground mb-4">{translate("cartModal-clearConfirmationPrompt-1")}</p>
                         <div className="flex justify-center gap-4">
-                            <Button variant="destructive" onClick={handleClearCart}>Yes, Clear Cart</Button>
-                            <Button variant="outline" onClick={() => setShowConfirm(false)}>Cancel</Button>
+                            <Button variant="destructive" onClick={handleClearCart}>{translate("cartModal-clearButton-1")}</Button>
+                            <Button variant="outline" onClick={() => setShowConfirm(false)}>{translate("cartModal-cancelClearButton-1")}</Button>
                         </div>
                     </div>
                 ) : (
                     <div className="flex justify-between items-center gap-4">
-                        <Button variant="outline" onClick={() => setShowConfirm(true)}>Clear Shopping Cart</Button>
-                        <Button className="flex-grow" onClick={handleCheckout}>Checkout</Button>
+                        <Button variant="outline" onClick={() => setShowConfirm(true)}>{translate("cartModal-clearCartButton-1")}</Button>
+                        <Button className="flex-grow" onClick={handleCheckout}>{translate("cartModal-checkoutButton-1")}</Button>
                     </div>
                 )}
             </div>
           </>
         ) : (
-          <div className="text-center py-12"><p className="text-muted-foreground">Your cart is empty.</p></div>
+          <div className="text-center py-12"><p className="text-muted-foreground">{translate("cartModal-emptyCartMessage-1")}</p></div>
         )}
       </Card>
     </div>

@@ -3,6 +3,7 @@
 import { FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { CardContent } from '@/components/ui/card';
+import { useTranslation } from '@/app/hooks/useTranslation';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
@@ -18,37 +19,38 @@ interface LoginPasswordFormProps {
 }
 
 export default function LoginPasswordForm({ onSubmit, loading, error, setMode, resetForm }: LoginPasswordFormProps) {
+    const { translate } = useTranslation();
     return (
         <form onSubmit={onSubmit}>
             <CardContent>
                 <div className='grid gap-4'>
                     <div className='grid gap-2'>
-                        <Label htmlFor='email'>Email</Label>
+                        <Label htmlFor='email'>{translate("loginForm-emailLabel-1")}</Label>
                         <Input id='email' name='email' type='email' autoComplete='email' placeholder='m@example.com' required />
                     </div>
                     <div className='grid gap-2'>
-                        <Label htmlFor='password'>Password</Label>
+                        <Label htmlFor='password'>{translate("loginForm-passwordLabel-1")}</Label>
                         <Input id='password' name='password' type='password' required />
                     </div>
                     {loading ? (
                         <Button disabled className="w-full">
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Please wait
+                            {translate("loginForm-loadingButton-1")}
                         </Button>
                     ) : (
-                        <Button type="submit" className="w-full">Login with Password</Button>
+                        <Button type="submit" className="w-full">{translate("loginForm-submitButton-1")}</Button>
                     )}
                     {!!error && <p className="text-red-600 text-sm text-center">{error}</p>}
                 </div>
                  <div className='mt-2 text-center text-sm'>
                     <Button variant="link" type="button" onClick={() => { resetForm(); setMode('login-email'); }}>
-                        Login with Email Code
+                        {translate("loginForm-emailLoginLink-1")} 
                     </Button>
                 </div>
                 <div className='mt-1 text-center text-sm'>
-                    Don&apos;t have an account?{' '}
+                    {translate("loginForm-registerPrompt-1")}{' '}
                     <Button variant="link" type="button" onClick={() => { resetForm(); setMode('register'); }}>
-                        Click here
+                        {translate("loginForm-registerLink-1")}
                     </Button>
                 </div>
             </CardContent>

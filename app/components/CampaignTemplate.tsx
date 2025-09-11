@@ -35,7 +35,7 @@ interface CampaignTemplateProps {
 
 export default function CampaignTemplate({ collectible, sponsors }: CampaignTemplateProps) {
   // All hooks must be called at the top level of the component, before any returns.
-  const { language } = useTranslation();
+  const { translate, language } = useTranslation();
   const { addToCart } = useCart();
   const isMobile = useMediaQuery('md'); // Hook to check for screen size
 
@@ -93,14 +93,14 @@ export default function CampaignTemplate({ collectible, sponsors }: CampaignTemp
                 </Card>
                 <div className="pt-10 flex gap-2">
                   <Button className="w-full bg-blue-600 hover:bg-blue-700 px-8 py-3 rounded-full text-lg font-semibold shadow-lg transition-transform transform hover:scale-105" onClick={handleAddToCart}>
-                    {'buyNow'}
+                    {translate("campaignTemplate-buyNowButton-1")}
                   </Button>
               </div>
               </div>
               <div className="md:col-span-2">
                 <Card className="bg-card shadow-lg rounded-lg w-full">
                   <CardContent className="p-6 md:p-8">
-                    <h2 className="text-xl font-semibold text-foreground mb-4">Description</h2>
+                    <h2 className="text-xl font-semibold text-foreground mb-4">{translate("campaignTemplate-descriptionTitle-1")}</h2>
                     <div
                       className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground"
                       dangerouslySetInnerHTML={{ __html: displayDescription }}
@@ -142,10 +142,10 @@ export default function CampaignTemplate({ collectible, sponsors }: CampaignTemp
               {sponsors && sponsors.length > 0 && (
                   <section className="w-full py-12 md:py-20 bg-white">
                     <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
-                          <h2 className="text-xl font-semibold text-foreground mb-6">Meet Our Voices</h2>
+                          <h2 className="text-xl font-semibold text-foreground mb-6">{translate("campaignTemplate-sponsorsTitle-1")}</h2>
                           <div className="flex flex-wrap items-center gap-x-12 gap-y-6 mb-6">
                             <p className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground">
-                              That should be a carousel for the voices, click on the image links to social profile (images are only examples background should be white like the other boxes.
+                              {translate("campaignTemplate-sponsorsDescription-1")}
                             </p>
                           </div>
                           <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6">

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { Loader2 } from "lucide-react";
+import { useTranslation } from '@/app/hooks/useTranslation';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AuthError } from '@/app/_helpers/authErrors';
@@ -35,19 +36,20 @@ export default function ConfirmationModal({
     setIsAlertOpen,
     onStartOver
 }: ConfirmationModalProps) {
+      const { translate } = useTranslation();
     return (
         <>
             <Dialog open={isOpen}>
                 <DialogContent className="sm:max-w-[425px]" onInteractOutside={(e) => e.preventDefault()}>
                     <DialogHeader>
-                        <DialogTitle>Bestätigungscode eingeben</DialogTitle>
+                        <DialogTitle>{translate("confirmationModal-title-1")}</DialogTitle>
                         <DialogDescription>
-                            Wir haben einen Code an {email} gesendet. Bitte geben Sie ihn unten ein.
+                            {translate("confirmationModal-description-1")}  {email} {translate("confirmationModal-description-2")}
                         </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                         <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="code" className="text-right">Code</Label>
+                            <Label htmlFor="code" className="text-right">{translate("confirmationModal-codeLabel-1")}</Label>
                             <Input
                                 id="code"
                                 value={code}
@@ -59,14 +61,14 @@ export default function ConfirmationModal({
                         {!!error && <p className="text-red-600 text-sm col-span-4 text-center">{error}</p>}
                     </div>
                     <DialogFooter>
-                        <Button variant="outline" onClick={onBack} disabled={isConfirming}>Zurück</Button>
+                        <Button variant="outline" onClick={onBack} disabled={isConfirming}>{translate("confirmationModal-backButton-1")}</Button>
                         {isConfirming ? (
                             <Button disabled>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Bestätigen...
+                                {translate("confirmationModal-confirmingButton-1")} 
                             </Button>
                         ) : (
-                            <Button onClick={onConfirm}>Bestätigen</Button>
+                            <Button onClick={onConfirm}>{translate("confirmationModal-confirmButton-1")}</Button>
                         )}
                     </DialogFooter>
                 </DialogContent>
@@ -75,14 +77,14 @@ export default function ConfirmationModal({
             <AlertDialog open={isAlertOpen}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Sind Sie sicher?</AlertDialogTitle>
+                        <AlertDialogTitle>{translate("confirmationModal-alertTitle-1")}</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Wenn Sie zurückgehen, wird der aktuelle Vorgang abgebrochen.
+                            {translate("confirmationModal-alertDescription-1")}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel onClick={() => setIsAlertOpen(false)}>Abbrechen</AlertDialogCancel>
-                        <AlertDialogAction onClick={onStartOver}>Fortfahren</AlertDialogAction>
+                        <AlertDialogCancel onClick={() => setIsAlertOpen(false)}>{translate("confirmationModal-alertCancel-1")}</AlertDialogCancel>
+                        <AlertDialogAction onClick={onStartOver}>{translate("confirmationModal-alertAction-1")}</AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>

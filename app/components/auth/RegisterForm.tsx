@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent } from 'react';
+import { useTranslation } from '@/app/hooks/useTranslation';
 import { Button } from '@/components/ui/button';
 import { CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -19,44 +20,45 @@ interface RegisterFormProps {
 }
 
 export default function RegisterForm({ onSubmit, loading, error, setMode, resetForm }: RegisterFormProps) {
+    const { translate } = useTranslation();
     return (
         <form onSubmit={onSubmit}>
             <CardContent>
                 <div className='grid gap-4'>
                     <div className='grid gap-2'>
-                        <Label htmlFor='email'>Email</Label>
+                        <Label htmlFor='email'>{translate("registerForm-emailLabel-1")}</Label>
                         <Input id='email' name='email' type='email' autoComplete='email' placeholder='m@example.com' required />
                     </div>
                     <div className='grid gap-2'>
-                        <Label htmlFor='password'>Passwort</Label>
+                        <Label htmlFor='password'>{translate("registerForm-passwordLabel-1")}</Label>
                         <Input id='password' name='password' type='password' required />
                     </div>
                     <div className='grid gap-2'>
-                        <Label htmlFor='confirmPassword'>Passwort bestätigen</Label>
+                        <Label htmlFor='confirmPassword'>{translate("registerForm-confirmPasswordLabel-1")}</Label>
                         <Input id='confirmPassword' name='confirmPassword' type='password' required />
                     </div>
                     <div className='grid gap-2'>
                         <div className="flex items-center space-x-2">
                             <Checkbox defaultChecked id="nlBox" name="nlBox" />
                             <label className="text-sm font-medium leading-none" htmlFor="nlBox">
-                                Ich möchte den Kloppocar-Newsletter abonnieren
+                                {translate("registerForm-newsletterLabel-1")}
                             </label>
                         </div>
                     </div>
                     {loading ? (
                         <Button disabled className="w-full">
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Bitte warten
+                            {translate("registerForm-loadingButton-1")}
                         </Button>
                     ) : (
-                        <Button type="submit" className="w-full">Jetzt anmelden</Button>
+                        <Button type="submit" className="w-full">{translate("registerForm-submitButton-1")}</Button>
                     )}
                     {!!error && <p className="text-red-600 text-sm text-center">{error}</p>}
                 </div>
                 <div className='mt-4 text-center text-sm'>
-                    Sie haben bereits ein Konto?{' '}
+                    {translate("registerForm-loginPrompt-1")}{' '}
                     <Button variant="link" type="button" onClick={() => { resetForm(); setMode('login-email'); }}>
-                        Klicken Sie hier
+                        {translate("registerForm-loginLink-1")}
                     </Button>
                 </div>
             </CardContent>

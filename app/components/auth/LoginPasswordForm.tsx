@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent } from 'react';
+import { useTranslation } from '@/app/hooks/useTranslation';
 import { Button } from '@/components/ui/button';
 import { CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -18,22 +19,23 @@ interface LoginPasswordFormProps {
 }
 
 export default function LoginPasswordForm({ onSubmit, loading, error, setMode, resetForm }: LoginPasswordFormProps) {
+    const { translate } = useTranslation();
     return (
         <form onSubmit={onSubmit}>
             <CardContent>
                 <div className='grid gap-4'>
                     <div className='grid gap-2'>
-                        <Label htmlFor='email'>Email</Label>
+                        <Label htmlFor='email'>{translate("loginPasswordForm-emailLabel-1")}</Label>
                         <Input id='email' name='email' type='email' autoComplete='email' placeholder='m@example.com' required />
                     </div>
                     <div className='grid gap-2'>
-                        <Label htmlFor='password'>Passwort</Label>
+                        <Label htmlFor='password'>{translate("loginPasswordForm-passwordLabel-1")}</Label>
                         <Input id='password' name='password' type='password' required />
                     </div>
                     {loading ? (
                         <Button disabled className="w-full">
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Bitte warten
+                            {translate("loginPasswordForm-submitButton-1")}
                         </Button>
                     ) : (
                         <Button type="submit" className="w-full">Login mit Passwort</Button>
@@ -42,13 +44,13 @@ export default function LoginPasswordForm({ onSubmit, loading, error, setMode, r
                 </div>
                  <div className='mt-2 text-center text-sm'>
                     <Button variant="link" type="button" onClick={() => { resetForm(); setMode('login-email'); }}>
-                        Login mit Email-Code
+                        {translate("loginPasswordForm-emailLoginLink-1")}
                     </Button>
                 </div>
                 <div className='mt-1 text-center text-sm'>
-                    Haben noch kein Konto?{' '}
+                    {translate("loginPasswordForm-registerPrompt-1")}{' '}
                     <Button variant="link" type="button" onClick={() => { resetForm(); setMode('register'); }}>
-                        Klicken Sie hier
+                        {translate("loginPasswordForm-registerLink-1")}
                     </Button>
                 </div>
             </CardContent>

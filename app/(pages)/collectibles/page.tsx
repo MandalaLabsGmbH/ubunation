@@ -1,11 +1,11 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import CollectiblesGrid from "@/app/components/user/collectibles/CollectiblesGrid";
 import axios from 'axios';
 import { Suspense } from "react";
+import CollectiblesPageClient from "../../components/CollectiblesPageClient";
 
-// --- Type Definitions (no change) ---
+// --- Type Definitions ---
 interface Collectible {
     collectibleId: number;
     name: { en: string; de: string; };
@@ -23,9 +23,8 @@ interface EnrichedUserCollectible {
     collectible: Collectible;
 }
 
-// --- Data Fetching Function (no change) ---
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function getMyCollectibles(session: any): Promise<EnrichedUserCollectible[]> {
+// --- Data Fetching Function ---
+async function getMyCollectibles(session: { user?: { email?: string }; idToken?: string }): Promise<EnrichedUserCollectible[]> {
     if (!session?.user?.email || !session.idToken) {
         console.error("Authentication details are missing from the session.");
         return [];
@@ -72,7 +71,7 @@ async function getMyCollectibles(session: any): Promise<EnrichedUserCollectible[
     }
 }
 
-// --- NEW: Skeleton Component for the loading state ---
+// --- Skeleton Component for the loading state ---
 function MyCollectiblesSkeleton() {
     return (
         <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-pulse">
@@ -86,19 +85,15 @@ function MyCollectiblesSkeleton() {
     );
 }
 
-// --- NEW: Async Component for Data Fetching ---
+// --- Async Server Component for Data Fetching ---
 async function CollectiblesData() {
     const session = await getServerSession(authOptions);
     if (!session) return null;
 
-    const myCollectibles = await getMyCollectibles(session);
+    const myCollectibles = await getMyCollectibles(session as { user?: { email?: string }; idToken?: string });
 
-    return (
-        <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <h1 className="text-3xl font-bold text-center mb-12">My Collectibles</h1>
-            <CollectiblesGrid collectibles={myCollectibles} />
-        </main>
-    );
+    // Pass server-fetched data as a prop to the Client Component
+    return <CollectiblesPageClient collectibles={myCollectibles} />;
 }
 
 

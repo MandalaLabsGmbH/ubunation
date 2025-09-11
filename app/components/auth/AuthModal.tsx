@@ -5,6 +5,7 @@ import { useAuthModal } from '@/app/contexts/AuthModalContext';
 import { X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuthForm } from '@/app//hooks/useAuthForm';
+import { useTranslation } from '@/app/hooks/useTranslation';
 import RegisterForm from '@/app/components/auth/RegisterForm';
 import LoginPasswordForm from '@/app/components/auth/LoginPasswordForm';
 import LoginEmailForm from '@/app/components/auth/LoginEmailForm';
@@ -13,7 +14,7 @@ import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/ca
 import { configureAmplify } from '@/lib/amplify-config';
 
 export default function AuthModal() {
-  // Get the new initial state values from the context
+  const { translate } = useTranslation();
   const { isOpen, closeModal, redirectUrl, initialView, initialEmail } = useAuthModal();
   const router = useRouter();
 
@@ -102,14 +103,14 @@ export default function AuthModal() {
           <Card className='pt-0 mx-auto max-w-sm border-0 shadow-none mt-8'>
             <CardHeader>
               <CardTitle className="text-2xl text-center">
-                {mode === 'register' && 'Create an Account'}
-                {mode === 'login-password' && 'Login'}
-                {mode === 'login-email' && 'Login'}
+                {mode === 'register' && translate("authModal-createAccountTitle-1")}
+                {mode === 'login-password' && translate("authModal-loginTitle-1")}
+                {mode === 'login-email' && translate("authModal-loginTitle-1")}
               </CardTitle>
               <CardDescription className="text-center">
-                {mode === 'register' && 'Sign up to get started.'}
-                {mode === 'login-password' && 'Log in to your account.'}
-                {mode === 'login-email' && 'Get a magic link sent to your email.'}
+                {mode === 'register' && translate("authModal-createAccountDescription-1")}
+                {mode === 'login-password' && translate("authModal-loginPasswordDescription-1")}
+                {mode === 'login-email' && translate("authModal-loginEmailDescription-1")}
               </CardDescription>
             </CardHeader>
             <div style={{ pointerEvents: loading ? 'none' : 'auto', opacity: loading ? 0.6 : 1 }}>
