@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import NonUserButton from "@/app/components/NonUserButton";
 import { useTranslation } from '@/app/hooks/useTranslation';
 import SplitsView from './SplitsView';
-import ImageStaggeredGallery from './ImageStaggeredGallery'; // Import the new component
+import ImageStaggeredGallery from './ImageStaggeredGallery';
 import { useMediaQuery } from '@/app/hooks/useMediaQuery';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 
@@ -56,8 +56,8 @@ export default function CampaignTemplate({ collectible, sponsors }: CampaignTemp
     return <div>Loading...</div>;
   }
 
-  const displayName = collectible.name[language] || collectible.name.en;
-  const displayDescription = collectible.description[language] || collectible.description.en;
+  const displayName = collectible.name[language as 'en'|'de'] || collectible.name.en;
+  const displayDescription = collectible.description[language as 'en'|'de'] || collectible.description.en;
   // The Fix: Get the price from the collectible data, default to 0 if not present.
   const itemPrice = parseFloat(collectible.price?.base || '0');
 
@@ -80,8 +80,10 @@ export default function CampaignTemplate({ collectible, sponsors }: CampaignTemp
                 {displayName}
               </h2>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-              <div className="md:col-span-1">
+            {/* The main container switches to flex on large screens */}
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:flex gap-8">
+              {/* Left Column */}
+              <div className="md:col-span-1 lg:w-1/3">
                 <Card className="bg-card shadow-lg rounded-lg overflow-hidden">
                   <Image
                     src={collectible.imageRef?.img || ''}
@@ -97,9 +99,11 @@ export default function CampaignTemplate({ collectible, sponsors }: CampaignTemp
                   </Button>
               </div>
               </div>
-              <div className="md:col-span-2">
-                <Card className="bg-card shadow-lg rounded-lg w-full">
-                  <CardContent className="p-6 md:p-8">
+              {/* Right Column: Make it a flex container */}
+              <div className="md:col-span-2 lg:w-2/3 flex">
+                {/* Make the Card grow to fill the container */}
+                <Card className="bg-card shadow-lg rounded-lg w-full flex flex-col">
+                  <CardContent className="p-6 md:p-8 flex-grow">
                     <h2 className="text-xl font-semibold text-foreground mb-4">{translate("campaignTemplate-descriptionTitle-1")}</h2>
                     <div
                       className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground"
@@ -184,7 +188,7 @@ export default function CampaignTemplate({ collectible, sponsors }: CampaignTemp
                 {translate("campaignTemplate-raffle-title-1")}
               </h2>
             </div>
-            <div className="w-full flex flex-col md:flex-row justify-between gap-12 lg:gap-6 p-1">
+            <div className="w-full flex flex-col-reverse md:flex-row justify-between gap-12 lg:gap-6 p-1">
               <div className="w-full">
                 <Card className="bg-card flex flex-col shadow-lg h-full">
                   <div className="py-5 pl-10 pr-10 text-left flex flex-col flex-grow justify-between">
