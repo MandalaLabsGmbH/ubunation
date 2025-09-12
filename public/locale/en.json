@@ -187,5 +187,8 @@
   "header-themeLabel-1": "Theme",
   "logoutButton-confirm-1": "Are you sure you want to sign out?",
   "logoutButton-logOut-1": "Log Out",
-  "themeToggleButton-srOnly-1": "Toggle theme"
+  "themeToggleButton-srOnly-1": "Toggle theme",
+  "footer-subscribeButton-loading": "Sending...",
+  "footer-subscribe-successMessage": "Thank you for subscribing to the Ubunation Mailing List! You should receive a confirmation email soon welcoming you to the group!",
+  "footer-subscribe-errorMessage": "Something went wrong, please try again."
 }

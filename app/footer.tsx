@@ -2,10 +2,12 @@
 
 import Link from 'next/link';
 import { useTranslation } from '@/app/hooks/useTranslation';
-import { inter } from './fonts'; // Assuming you have fonts set up like this
+import { inter } from './fonts';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useState, FormEvent } from 'react';
+import { Loader2 } from 'lucide-react'; // Import the spinner icon
 
 // SVG components for social media icons for better styling control
 const FacebookIcon = () => (
@@ -35,6 +37,35 @@ const LinkedInIcon = () => (
 
 export default function Footer() {
   const { translate } = useTranslation();
+  const [email, setEmail] = useState('');
+  const [status, setStatus] = useState<'idle' | 'loading'>('idle');
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setStatus('loading');
+
+    try {
+      const response = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Subscription failed.');
+      }
+
+      alert(translate("footer-subscribe-successMessage"));
+      setEmail('');
+      setStatus('idle');
+
+    } catch (error) {
+      console.error(error);
+      alert(translate("footer-subscribe-errorMessage"));
+      setStatus('idle');
+    }
+  };
+
   const legalLinks = [
     { href: 'https://ubunation.com/imprint-content/', label: translate("footer-imprintLink-1"), key: '5' },
     { href: 'https://ubunation.com/terms-and-conditions/', label: translate("footer-termsLink-1"), key: '6' },
@@ -42,18 +73,16 @@ export default function Footer() {
 
   const socialLinks = [
     { href: 'https://www.facebook.com/ubunation', icon: <FacebookIcon />, label: translate("footer-facebookLabel-1") },
-    { href: 'https://x.com/ubunationhq', icon: <TwitterXIcon />, label: 'translate("footer-twitterLabel-1")' },
-    { href: 'https://www.instagram.com/ubunation/', icon: <InstagramIcon />, label: 'translate("footer-instagramLabel-1")' },
-    { href: 'https://www.linkedin.com/company/ubunation/', icon: <LinkedInIcon />, label: 'translate("footer-linkedInLabel-1")' },
+    { href: 'https://x.com/ubunationhq', icon: <TwitterXIcon />, label: translate("footer-twitterLabel-1") },
+    { href: 'https://www.instagram.com/ubunation/', icon: <InstagramIcon />, label: translate("footer-instagramLabel-1") },
+    { href: 'https://www.linkedin.com/company/ubunation/', icon: <LinkedInIcon />, label: translate("footer-linkedInLabel-1") },
   ];
 
   return (
     <footer className={`${inter.className} bg-card border-t bg-sky-800`}>
       <div className="container mx-auto px-6 py-8">
-        {/* Top section with links, social, and newsletter */}
         <div className="flex flex-col lg:flex-row items-center justify-between gap-y-8 lg:gap-y-4">
           
-          {/* Legal Links */}
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm font-medium text-foreground/80">
             {legalLinks.map((link) => (
               <Link key={link.key} href={link.href} target="_blank" className="hover:text-primary transition-colors text-white">
@@ -62,7 +91,6 @@ export default function Footer() {
             ))}
           </div>
           
-          {/* Social Media Icons */}
           <div className="flex justify-center gap-x-6">
             {socialLinks.map((social) => (
               <Link key={social.label} href={social.href} target="_blank" rel="noopener noreferrer" className="text-foreground/80 hover:text-primary transition-colors text-white">
@@ -72,21 +100,36 @@ export default function Footer() {
             ))}
           </div>
 
-          {/* Newsletter Form */}
           <form 
-            action="mailto:nico@mandala-labs.com?subject=New email for the Ubunation mailing list"
-            method="post"
-            encType="text/plain"
+            onSubmit={handleSubmit}
             className="flex max-w-med items-center space-x-2"
           >
             <Label htmlFor="email" className="text-white">{translate("footer-newsletterLabel-1")}</Label>
-            <Input type="email" name="email" placeholder="Email" className="bg-background" required />
-            <Button type="submit">{translate("footer-subscribeButton-1")}</Button>
+            <Input 
+              id="email"
+              type="email"
+              name="email"
+              placeholder="Email" 
+              className="bg-background" 
+              required 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={status === 'loading'}
+            />
+            <Button type="submit" disabled={status === 'loading'}>
+              {status === 'loading' ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {translate("footer-subscribeButton-loading")}
+                </>
+              ) : (
+                translate("footer-subscribeButton-1")
+              )}
+            </Button>
           </form>
 
         </div>
 
-        {/* Bottom row with copyright */}
         <div className="text-white mt-8 text-center text-sm text-foreground/60">
           <p>{translate("footer-copyright-1")}</p>
         </div>
