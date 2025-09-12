@@ -190,5 +190,16 @@
   "themeToggleButton-srOnly-1": "Toggle theme",
   "footer-subscribeButton-loading": "Sending...",
   "footer-subscribe-successMessage": "Thank you for subscribing to the Ubunation Mailing List! You should receive a confirmation email soon welcoming you to the group!",
-  "footer-subscribe-errorMessage": "Something went wrong, please try again."
+  "footer-subscribe-errorMessage": "Something went wrong, please try again.",
+  "campaignTemplate-becomeVoiceButton-1": "Become an Ubunation Voice",
+  "becomeVoiceModal-title-1": "Become an Ubunation Voice",
+  "becomeVoiceModal-nameLabel-1": "Name",
+  "becomeVoiceModal-followersLabel-1": "Social Media Followers",
+  "becomeVoiceModal-linkLabel-1": "Link to Social Media",
+  "becomeVoiceModal-emailLabel-1": "Email",
+  "becomeVoiceModal-sendButton-1": "Send",
+  "becomeVoiceModal-sendingButton-1": "Sending...",
+  "becomeVoiceModal-successMessage-1": "Thank you for submitting your request! We'll reach out to you as soon as possible.",
+  "becomeVoiceModal-errorMessage-1": "There was an error submitting your request. Please try again later.",
+  "becomeVoiceModal-okButton-1": "Ok"
 }
