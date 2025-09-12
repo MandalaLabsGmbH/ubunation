@@ -215,7 +215,7 @@ export default function HomePageClient() {
                 {translate("homePageClient-aboutTitle-1")}
               </h2>
             </div>
-            <div className="w-full flex flex-col-reverse md:flex-row justify-between gap-12 lg:gap-6 p-1">
+            <div className="w-full flex flex-col-reverse md:flex-row justify-between gap-8 md:gap-12 lg:gap-6 p-1">
               <div className="w-full">
                 <Card className="bg-card flex flex-col shadow-lg h-full">
                   <div className="py-5 pl-10 pr-10 text-left flex flex-col flex-grow justify-between">

@@ -8,7 +8,9 @@ import { Button } from '@/components/ui/button';
 import NonUserButton from "@/app/components/NonUserButton";
 import { useTranslation } from '@/app/hooks/useTranslation';
 import SplitsView from './SplitsView';
-import ImageCarouselGallery from './ImageCarouselGallery'; // Import the new component
+import ImageCarouselGallery from './ImageCarouselGallery';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 
 // --- Type Definitions ---
 interface Sponsor {
@@ -35,7 +37,6 @@ export default function CampaignTemplate({ collectible, sponsors }: CampaignTemp
   const { translate, language } = useTranslation();
   const { addToCart } = useCart();
 
-  // Add a few more images to the array to ensure smooth looping
   const galleryImages = [
     "https://ubunation.s3.eu-central-1.amazonaws.com/assets/samplePerson1.jpg",
     "https://ubunation.s3.eu-central-1.amazonaws.com/assets/samplePerson2.jpg",
@@ -115,16 +116,23 @@ export default function CampaignTemplate({ collectible, sponsors }: CampaignTemp
           {sponsors && sponsors.length > 0 && (
               <section className="w-full py-12 md:py-20 bg-white">
                 <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
+                  <Card className="bg-card p-10 shadow-lg rounded-lg">
                       <h2 className="text-xl font-semibold text-foreground mb-6">{translate("campaignTemplate-sponsorsTitle-1")}</h2>
-                      <div className="flex flex-wrap items-center gap-x-12 gap-y-6 mb-6">
-                        <p className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground">
+                      <p className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground mb-8">
                           {translate("campaignTemplate-sponsorsDescription-1")}
-                        </p>
-                      </div>
-                      <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6">
+                      </p>
+                      
+                      {/* --- Responsive Sponsor Carousel --- */}
+                      <Carousel
+                        className="w-full"
+                        opts={{ align: "start", loop: sponsors.length > 5 }}
+                        plugins={[ Autoplay({ delay: 10000, stopOnInteraction: false })]}
+                      >
+                        <CarouselContent className="-ml-4">
                           {sponsors.map((sponsor) => (
-                              <Card key={sponsor.sponsorId} className="bg-card pt-5 pl-5 pr-5 flex flex-col items-center shadow-lg h-80 transform hover:-translate-y-2 transition-transform duration-300 ease-in-out shadow-lg hover:shadow-2xl">
-                                  <Card className="aspect-square w-30 justify-center items-center overflow-hidden rounded-full shadow-lg p-2">
+                            <CarouselItem key={sponsor.sponsorId} className="pl-4 basis-1/2 md:basis-1/3 lg:basis-1/5">
+                                <Card key={sponsor.sponsorId} className="bg-card pt-5 pl-5 pr-5 flex flex-col items-center h-100 transform hover:-translate-y-2 transition-transform duration-300 ease-in-out hover:shadow-2xl">
+                                  <Card className="aspect-square w-full justify-center items-center overflow-hidden rounded-full shadow-lg p-2">
                                     <div className="relative w-full">
                                       <Link href={`${sponsor.urls.website}`} target="_blank" className="hover:underline">
                                         <Image
@@ -144,9 +152,14 @@ export default function CampaignTemplate({ collectible, sponsors }: CampaignTemp
                                       <p className="text-sm text-muted-foreground">{sponsor.description.en}</p>
                                   </div>
                             </Card>
+                            </CarouselItem>
                           ))}
-                      </div>
-                      </div>
+                        </CarouselContent>
+                        <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 z-10" />
+                        <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 z-10" />
+                      </Carousel>
+                  </Card>
+                </div>
               </section>
           )}
 
@@ -158,7 +171,7 @@ export default function CampaignTemplate({ collectible, sponsors }: CampaignTemp
                 {translate("campaignTemplate-raffle-title-1")}
               </h2>
             </div>
-            <div className="w-full flex flex-col-reverse md:flex-row justify-between gap-12 lg:gap-6 p-1">
+            <div className="w-full flex flex-col-reverse md:flex-row justify-between gap-8 md:gap-12 lg:gap-6 p-1">
               <div className="w-full">
                 <Card className="bg-card flex flex-col shadow-lg h-full">
                   <div className="py-5 pl-10 pr-10 text-left flex flex-col flex-grow justify-between">

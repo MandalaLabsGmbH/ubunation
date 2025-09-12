@@ -14,8 +14,8 @@ const emergencyTranslations = {
 };
 
 // Define the URLs for your public translation files
-const EN_JSON_URL = 'https://ubunation.s3.eu-central-1.amazonaws.com/locale/en.jsonnn';
-const DE_JSON_URL = 'https://ubunation.s3.eu-central-1.amazonaws.com/locale/de.jsonnn';
+const EN_JSON_URL = 'https://ubunation.s3.eu-central-1.amazonaws.com/locale/en.json';
+const DE_JSON_URL = 'https://ubunation.s3.eu-central-1.amazonaws.com/locale/de.json';
 
 type Language = 'en' | 'de';
 type Translations = Record<string, string>;

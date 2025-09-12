@@ -52,13 +52,13 @@ export default function ImageCarouselGallery({ images }: ImageCarouselGalleryPro
         plugins={[
           Autoplay({
             delay: 10000,
-            stopOnInteraction: true, // It's better UX to stop autoplay when user interacts
+            stopOnInteraction: true,
           }),
         ]}
       >
         <CarouselContent>
           {images.map((src, index) => (
-            <CarouselItem key={index} className="basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
+            <CarouselItem key={index} className="basis-1/2 md:basis-1/3 lg:basis-1/4">
               <div 
                 className="p-1 md:p-2 cursor-pointer"
                 onClick={() => handleImageClick(src)}
@@ -69,15 +69,16 @@ export default function ImageCarouselGallery({ images }: ImageCarouselGalleryPro
                     alt={`Gallery image ${index + 1}`}
                     fill
                     className="object-cover"
-                    sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                    sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                   />
                 </div>
               </div>
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 z-10 hidden md:flex" />
-        <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 z-10 hidden md:flex" />
+        {/* Removed responsive classes to make arrows always visible */}
+        <CarouselPrevious className="absolute md:-left-8 left-2 top-1/2 -translate-y-1/2 z-10" />
+        <CarouselNext className="absolute md:-right-8 right-2 top-1/2 -translate-y-1/2 z-10" />
       </Carousel>
 
       {/* Enlarged Image Modal */}
@@ -88,7 +89,7 @@ export default function ImageCarouselGallery({ images }: ImageCarouselGalleryPro
         >
           <Card
             className="relative bg-background rounded-lg shadow-xl w-auto h-auto max-w-[75vw] max-h-[75vh] p-2"
-            onClick={(e) => e.stopPropagation()} // Prevent click inside from closing modal
+            onClick={(e) => e.stopPropagation()}
           >
             <button
               onClick={closeModal}
