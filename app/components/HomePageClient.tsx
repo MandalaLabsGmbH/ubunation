@@ -199,7 +199,9 @@ export default function HomePageClient() {
                     </CarouselItem>
                   ))}
                 </CarouselContent>
+                <div className="pt-4">
                 <CarouselDots />
+                </div>
               </Carousel>
             )}
           </div>
@@ -250,9 +252,9 @@ export default function HomePageClient() {
             {loadingStates.projects ? <SectionSpinner /> : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {featuredCollectibles.map(collectible => (
-                    <Card key={collectible.collectibleId} className="bg-card w-full flex flex-col overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 ease-in-out shadow-lg hover:shadow-2xl">
+                  <Link key={collectible.collectibleId} href={`/campaign/${collectible.collectibleId}`}>
+                    <Card className="bg-card w-full flex flex-col overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 ease-in-out shadow-lg hover:shadow-2xl">
                         {collectible.imageRef && (
-                          <Link href={`/campaign/${collectible.collectibleId}`} className="hover:underline">
                               <Image 
                                   src={collectible.imageRef.img}
                                   alt={getLocalizedString(collectible.name, language)} 
@@ -260,7 +262,6 @@ export default function HomePageClient() {
                                   width={500}
                                   height={500}
                               />
-                          </Link>
                         )}
                         <div className="bg-blue-600 text-white text-center py-2 font-semibold">
                             {getLocalizedString(collectible.name, language)}
@@ -271,6 +272,7 @@ export default function HomePageClient() {
                             </p>
                         </CardContent>
                     </Card>
+                  </Link>
                 ))}
               </div>
             )}
