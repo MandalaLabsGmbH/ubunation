@@ -28,8 +28,9 @@ interface Sponsor {
 interface Collection {
     collectionId: number;
     name: { en: string; de: string; };
-    imageRef?: { [key: string]: string }; // For prize images
-    embedRef?: { [key: string]: string }; // For raffle description
+    imageRef?: { [key: string]: string };
+    embedRef?: { [key: string]: string };
+    vidRef?: { [key: string]: string };
 }
 
 type CampaignPageProps = {
