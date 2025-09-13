@@ -216,7 +216,7 @@ export default function HomePageClient() {
               </h2>
             </div>
             <div className="w-full flex flex-col-reverse md:flex-row justify-between gap-8 md:gap-12 lg:gap-6 p-1">
-              <div className="w-full">
+              <div className="md:w-full flex">
                 <Card className="bg-card flex flex-col shadow-lg h-full">
                   <div className="py-5 pl-10 pr-10 text-left flex flex-col flex-grow justify-between">
                     <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
@@ -226,7 +226,7 @@ export default function HomePageClient() {
                   </div>
                 </Card>
               </div>
-               <div className="md:w-1/2 flex justify-center items-center">
+               <div className="md:w-1/2">
                 <Link href='https://www.ubunation.com/' target='_blank' className="hover:underline">
                   <Image 
                     src='/images/ubuLion.jpg' 

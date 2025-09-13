@@ -24,14 +24,22 @@ interface Sponsor {
     imageRef?: { profile: string; };
   };
 
+// MODIFIED: Updated Collection type
+interface Collection {
+    collectionId: number;
+    name: { en: string; de: string; };
+    imageRef?: { [key: string]: string }; // For prize images
+    embedRef?: { [key: string]: string }; // For raffle description
+}
+
 type CampaignPageProps = {
   params: Promise<{ id: string }>;
 };
 
-// --- Data Fetching Functions (MODIFIED) ---
+// --- Data Fetching Functions ---
 async function getCollectible(id: string): Promise<Collectible | null> {
     try {
-        const baseUrl = process.env.NEXTAUTH_URL; // Use NEXTAUTH_URL for server-side fetches
+        const baseUrl = process.env.NEXTAUTH_URL;
         const res = await fetch(`${baseUrl}/api/db/collectible?collectibleId=${id}`, { cache: 'no-store' });
         
         if (!res.ok) {
@@ -56,7 +64,6 @@ async function getSponsors(collectionId: number): Promise<Sponsor[]> {
             return [];
         }
         const data = await res.json();
-        console.log("Fetched Sponsors:", data.res);
         return Array.isArray(data) ? data : [];
     } catch (error) {
         console.error("Error in getSponsors:", error);
@@ -64,6 +71,20 @@ async function getSponsors(collectionId: number): Promise<Sponsor[]> {
     }
 }
 
+async function getCollection(id: number): Promise<Collection | null> {
+    try {
+        const baseUrl = process.env.NEXTAUTH_URL;
+        const res = await fetch(`${baseUrl}/api/db/collection?collectionId=${id}`, { cache: 'no-store' });
+        if (!res.ok) {
+            console.error(`API call failed with status: ${res.status}`);
+            return null;
+        }
+        return res.json();
+    } catch (error) {
+        console.error("Error in getCollection:", error);
+        return null;
+    }
+}
 
 // --- Skeleton Component (no change) ---
 function CampaignPageSkeleton() {
@@ -98,7 +119,7 @@ function CampaignPageSkeleton() {
     );
 }
 
-// --- Async Data Component (no change) ---
+// --- Async Data Component (MODIFIED) ---
 async function CampaignData({ id }: { id: string }) {
     const collectible = await getCollectible(id);
 
@@ -106,10 +127,14 @@ async function CampaignData({ id }: { id: string }) {
         notFound();
     }
     
-    const sponsors = await getSponsors(collectible.collectionId);
+    // Fetch sponsors and collection data in parallel
+    const [sponsors, collection] = await Promise.all([
+        getSponsors(collectible.collectionId),
+        getCollection(collectible.collectionId)
+    ]);
 
     return (
-        <CampaignTemplate collectible={collectible} sponsors={sponsors} />
+        <CampaignTemplate collectible={collectible} sponsors={sponsors} collection={collection} />
     );
 }
 

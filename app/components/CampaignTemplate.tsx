@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { useCart } from '@/app/contexts/CartContext';
 import { Button } from '@/components/ui/button';
-import NonUserButton from "@/app/components/NonUserButton";
 import { useTranslation } from '@/app/hooks/useTranslation';
 import SplitsView from './SplitsView';
 import ImageCarouselGallery from './ImageCarouselGallery';
@@ -24,6 +23,13 @@ interface Sponsor {
     imageRef?: { profile: string; };
   };
 
+interface Collection {
+    collectionId: number;
+    name: { en: string; de: string; };
+    imageRef?: { [key: string]: string }; // For prize images
+    embedRef?: { [key: string]: string }; // For raffle description
+}
+
 interface CampaignTemplateProps {
   collectible: {
     collectibleId: number;
@@ -33,9 +39,10 @@ interface CampaignTemplateProps {
     price?: { base: string };
   },
   sponsors: Sponsor[];
+  collection: Collection | null;
 }
 
-export default function CampaignTemplate({ collectible, sponsors }: CampaignTemplateProps) {
+export default function CampaignTemplate({ collectible, sponsors, collection }: CampaignTemplateProps) {
   const { translate, language } = useTranslation();
   const { addToCart } = useCart();
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false); // State for the modal
@@ -56,6 +63,20 @@ export default function CampaignTemplate({ collectible, sponsors }: CampaignTemp
   const displayName = collectible.name[language as 'en'|'de'] || collectible.name.en;
   const displayDescription = collectible.description[language as 'en'|'de'] || collectible.description.en;
   const itemPrice = parseFloat(collectible.price?.base || '0');
+
+   // Dynamically get the raffle description based on language
+  const raffleDescription = collection?.embedRef?.[language as 'en'|'de'] || collection?.embedRef?.['en'] || '';
+
+  // Dynamically create an array of prize image URLs
+  const prizeImages = [];
+  if (collection?.imageRef) {
+      for (let i = 1; i <= 5; i++) {
+          const key = `prize${i}`;
+          if (collection.imageRef[key]) {
+              prizeImages.push(collection.imageRef[key]);
+          }
+      }
+  }
 
   const handleAddToCart = () => {
     addToCart({
@@ -171,38 +192,64 @@ export default function CampaignTemplate({ collectible, sponsors }: CampaignTemp
                 </section>
             )}
 
-          <section className="w-full py-12 md:py-20 bg-zinc-50 dark:bg-zinc-900">
-            <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="text-center mb-12">
-                <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
-                  {translate("campaignTemplate-raffle-title-1")}
-                </h2>
+          {/* --- Raffle and Rewards Section (MODIFIED) --- */}
+        <section className="w-full py-12 md:py-20 bg-zinc-50 dark:bg-zinc-900">
+          <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
+                {translate("campaignTemplate-raffle-title-1")}
+              </h2>
+            </div>
+            <div className="w-full flex flex-col-reverse md:flex-row justify-between gap-12 lg:gap-6 p-1">
+              <div className="md:w-full flex">
+                <Card className="bg-card flex flex-col shadow-lg w-full">
+                    <CardContent className="p-6 md:p-8 flex-grow">
+                        <div
+                            className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground"
+                            dangerouslySetInnerHTML={{ __html: raffleDescription }}
+                        />
+                    </CardContent>
+                </Card>
               </div>
-              <div className="w-full flex flex-col-reverse md:flex-row justify-between gap-12 lg:gap-6 p-1">
-                <div className="w-full">
-                  <Card className="bg-card flex flex-col shadow-lg h-full">
-                    <div className="py-5 pl-10 pr-10 text-left flex flex-col flex-grow justify-between">
-                      <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
-                        {translate("campaignTemplate-raffle-description-1")}
-                      </p>
-                      <NonUserButton label="Learn More" route='https://www.ubunation.com/' isLink={true} />
-                    </div>
-                  </Card>
-                </div>
-                <div className="md:w-1/2 flex justify-center">
-                  <Link href='https://www.ubunation.com/' target='_blank' className="hover:underline">
+              <div className="md:w-1/2 flex justify-center items-center">
+                {prizeImages.length > 0 ? (
+                    <Carousel
+                        className="w-full max-w-md"
+                        opts={{ loop: true }}
+                        plugins={[Autoplay({ delay: 8000, stopOnInteraction: false })]}
+                    >
+                        <CarouselContent>
+                            {prizeImages.map((imgSrc, index) => (
+                                <CarouselItem key={index}>
+                                    <Card className="overflow-hidden rounded-lg shadow-2xl">
+                                        <Image 
+                                            src={imgSrc} 
+                                            alt={`Raffle prize ${index + 1}`}
+                                            width={500}
+                                            height={500}
+                                            className="w-full h-full object-cover aspect-square"
+                                        />
+                                    </Card>
+                                </CarouselItem>
+                            ))}
+                        </CarouselContent>
+                        <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 z-10" />
+                        <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 z-10" />
+                    </Carousel>
+                ) : (
+                    // Fallback if no prize images are found
                     <Image 
                       src='/images/ubuLion.jpg' 
-                      alt="About Us"
+                      alt="Raffle placeholder"
                       className="rounded-lg shadow-2xl w-full max-w-md"
                       width={500}
                       height={500}
                     />
-                  </Link>
-                </div>
+                )}
               </div>
             </div>
-          </section>
+          </div>
+        </section>
 
           <section className="w-full py-12 md:py-20 bg-white">
             <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
